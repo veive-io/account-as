@@ -34,10 +34,10 @@
     "koinos-precompiler-as": "^1.6.0"
   },
   "devDependencies": {
-    "@veive/mod-as": "^1.0.0",
-    "@veive/modexecution-as": "^1.0.0",
-    "@veive/modhooks-as": "^1.0.0",
-    "@veive/modvalidation-as": "^1.0.0",
+    "@veive/mod-as": "^1.0.6",
+    "@veive/modexecution-as": "^1.0.4",
+    "@veive/modhooks-as": "^1.0.2",
+    "@veive/modvalidation-as": "^1.0.4",
     "@as-covers/core": "^0.4.2",
     "@as-pect/cli": "^8.0.1",
     "@roamin/local-koinos": "^0.4.15",

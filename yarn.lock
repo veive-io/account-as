@@ -1235,31 +1235,31 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@veive/mod-as@^1.0.0":
+"@veive/mod-as@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@veive/mod-as/-/mod-as-1.0.6.tgz#cc1283f3f78cbc881bfa3d01661d495b819f62e7"
+  integrity sha512-d3G0pRbBGM7MqUBib3iTbwyDMNgkolMR0se+2jfGFYbfto1lWOSLKUO9ZszGWVH62DytTUdSf9T8MZHKvfRR0A==
+  dependencies:
+    "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
+
+"@veive/modexecution-as@^1.0.4":
   version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@veive/mod-as/-/mod-as-1.0.4.tgz#1e4d60feac3583d825f3ff46bece3e42f8b36f2a"
-  integrity sha512-lGwCOkj3G4Sp80P+rqAkQTLcbOwwpDzgN5iv56POkdZ1SDN+4NLTwUZp6OtKqdYc6wtW4cnntesNn8H3blWhdw==
+  resolved "https://registry.yarnpkg.com/@veive/modexecution-as/-/modexecution-as-1.0.4.tgz#fca79b28e36ed83e94b90026d0ac4b7e0b2bce26"
+  integrity sha512-HuavrAY6riWVogBocrivdWhOWYNCqeqaKvrNqkZTXOJr4fe8K60zaLw9+hUgXuvarXOBMdAxegsTnYjNLlSjKA==
   dependencies:
     "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
 
-"@veive/modexecution-as@^1.0.0":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@veive/modexecution-as/-/modexecution-as-1.0.3.tgz#c3f32166aa177a0d0c89c6961748b72ade99d395"
-  integrity sha512-ygdmwiEfn92G71gXBm4pERj07pGZr0xCnpcg27CKn09jxTOifEzWminmCPNe2lJLWUOF6L9c1BY4ZTmy35rIew==
-  dependencies:
-    "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
-
-"@veive/modhooks-as@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@veive/modhooks-as/-/modhooks-as-1.0.1.tgz#2f33069f3f8909e947ef36808005fd1d871ce4fb"
-  integrity sha512-s+jdHLPGop3w0jxM2ZmKx15KHO1h4WE18zGW21OBWr1JUGBm/l5bPYRUaLyhhUqNdLcBV+OLm8ydtMEhIBHsbw==
-  dependencies:
-    "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
-
-"@veive/modvalidation-as@^1.0.0":
+"@veive/modhooks-as@^1.0.2":
   version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@veive/modvalidation-as/-/modvalidation-as-1.0.2.tgz#1a143dcc73cac21dc027d113509cd90af4957c22"
-  integrity sha512-RC9aMGnMrOrfZrnlhu4nXafjeC47zXVybhCT3un+MqdEqLQ1pYUNQd+IKNvHZjRdeRG0d7znBpaj39WJ+WbsRw==
+  resolved "https://registry.yarnpkg.com/@veive/modhooks-as/-/modhooks-as-1.0.2.tgz#ceddc5002f9f3f2568554f23087fb2442269adb6"
+  integrity sha512-h78+9EQGv5TqrA6FtC15Ei0NZ/uuZSW8Gly27rCD+CETiUnBA5IReZXgdDkq1cuRzLm3Lr7O5NT4Io1jIulWQA==
+  dependencies:
+    "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
+
+"@veive/modvalidation-as@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@veive/modvalidation-as/-/modvalidation-as-1.0.4.tgz#de045c2f70314cb9402e1f757dda33adbff11495"
+  integrity sha512-org8K3JCIz5ThQP5M94/mY3g0p3btWNb86c5dRcZ9q5zd6JooDL0Sag5nXNh2fuAgoutO1T++AcPV0VOVH/l8w==
   dependencies:
     "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
 
