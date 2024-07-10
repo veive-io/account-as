@@ -83,7 +83,7 @@ export class Account {
     System.call(
       args.operation!.contract_id!, 
       args.operation!.entry_point, 
-      args.operation!.data!
+      args.operation!.args!
     );
   }
 
@@ -239,7 +239,7 @@ export class Account {
     const op = new modvalidation.operation();
     op.contract_id = operation.contract_id;
     op.entry_point = operation.entry_point;
-    op.data = operation.data;
+    op.args = operation.args;
 
     const args = new modvalidation.is_valid_operation_args(op);
 
@@ -281,7 +281,7 @@ export class Account {
         const op = new modhooks.operation();
         op.contract_id = operation.contract_id;
         op.entry_point = operation.entry_point;
-        op.data = operation.data;
+        op.args = operation.args;
         args.operation = op;
         args.sender = sender;
 
@@ -315,7 +315,7 @@ export class Account {
         const op = new modexecution.operation();
         op.contract_id = operation.contract_id;
         op.entry_point = operation.entry_point;
-        op.data = operation.data;
+        op.args = operation.args;
         args.operation = op;
 
         const mod = new IModExecution(executors[i]);

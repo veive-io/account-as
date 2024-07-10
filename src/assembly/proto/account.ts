@@ -37,10 +37,10 @@ export namespace account {
         writer.uint32(message.entry_point);
       }
 
-      const unique_name_data = message.data;
-      if (unique_name_data !== null) {
+      const unique_name_args = message.args;
+      if (unique_name_args !== null) {
         writer.uint32(26);
-        writer.bytes(unique_name_data);
+        writer.bytes(unique_name_args);
       }
     }
 
@@ -60,7 +60,7 @@ export namespace account {
             break;
 
           case 3:
-            message.data = reader.bytes();
+            message.args = reader.bytes();
             break;
 
           default:
@@ -74,16 +74,16 @@ export namespace account {
 
     contract_id: Uint8Array | null;
     entry_point: u32;
-    data: Uint8Array | null;
+    args: Uint8Array | null;
 
     constructor(
       contract_id: Uint8Array | null = null,
       entry_point: u32 = 0,
-      data: Uint8Array | null = null
+      args: Uint8Array | null = null
     ) {
       this.contract_id = contract_id;
       this.entry_point = entry_point;
-      this.data = data;
+      this.args = args;
     }
   }
 

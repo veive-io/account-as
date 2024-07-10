@@ -11,7 +11,7 @@ message mod {
 message operation {
     bytes contract_id = 1 [(koinos.btype) = ADDRESS];
     uint32 entry_point = 2;
-    bytes data = 3;
+    bytes args = 3;
 }
 
 message execute_args {
