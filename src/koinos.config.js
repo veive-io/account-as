@@ -27,33 +27,7 @@ module.exports = {
   supportAbi1: true,
   sourceDir: "./assembly",
   buildDir: "../build",
-  filesImport: [
-    {
-      dependency: "@veive/mod-as",
-      path: "../node_modules/@veive/mod-as/dist/Mod.ts",
-    },
-    {
-      dependency: "@veive/modhooks-as",
-      path: "../node_modules/@veive/modhooks-as/dist/Modhooks.ts",
-    },
-    {
-      dependency: "@veive/modexecution-as",
-      path: "../node_modules/@veive/modexecution-as/dist/Modexecution.ts",
-    },
-  ],
   protoImport: [
-    {
-      name: "@veive/mod-as",
-      path: "../node_modules/@veive/mod-as/dist/proto/mod",
-    },
-    {
-      name: "@veive/modhooks-as",
-      path: "../node_modules/@veive/modhooks-as/dist/proto/modhooks",
-    },
-    {
-      name: "@veive/modexecute-as",
-      path: "../node_modules/@veive/modexecution-as/dist/proto/modexecution",
-    },
     {
       name: "@koinosbox/contracts",
       path: "../node_modules/@koinosbox/contracts/koinosbox-proto",

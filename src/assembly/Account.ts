@@ -1,7 +1,7 @@
 import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
-import { modhooks, IModhooks } from "@veive/modhooks-as";
-import { modexecution, IModexecution } from "@veive/modexecution-as";
-import { modvalidation, IModvalidation } from "@veive/modvalidation-as";
+import { modhooks, IModHooks } from "@veive/mod-hooks-as";
+import { modexecution, IModExecution } from "@veive/mod-execution-as";
+import { modvalidation, IModValidation } from "@veive/mod-validation-as";
 import { account } from "./proto/account";
 
 const MODULE_VALIDATE_SPACE_ID = 1;
@@ -221,7 +221,7 @@ export class Account {
 
       const validatorModule = this.mod_validate.get(validators[i]);
       if (validatorModule) {
-        const mod = new IModvalidation(validators[i]);
+        const mod = new IModValidation(validators[i]);
         const res = mod.is_valid_signature(args);
 
         if (res.value == true) {
@@ -252,7 +252,7 @@ export class Account {
 
       const validatorModule = this.mod_validate.get(validators[i]);
       if (validatorModule) {
-        const mod = new IModvalidation(validators[i]);
+        const mod = new IModValidation(validators[i]);
         const res = mod.is_valid_operation(args);
 
         if (res.value == false) {
@@ -285,7 +285,7 @@ export class Account {
         args.operation = op;
         args.sender = sender;
 
-        const mod = new IModhooks(hooks[i]);
+        const mod = new IModHooks(hooks[i]);
         const res = mod.pre_check(args);
 
         if (res.value!) {
@@ -318,7 +318,7 @@ export class Account {
         op.data = operation.data;
         args.operation = op;
 
-        const mod = new IModexecution(executors[i]);
+        const mod = new IModExecution(executors[i]);
         mod.execute(args);
       }
     }
@@ -340,7 +340,7 @@ export class Account {
         const args = new modhooks.post_check_args();
         args.data = preCheckData[i];
 
-        const mod = new IModhooks(hooks[i]);
+        const mod = new IModHooks(hooks[i]);
         mod.post_check(args);
       }
     }
