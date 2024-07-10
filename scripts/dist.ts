@@ -7,14 +7,16 @@ const buildDir = path.relative('../', path.resolve(config.buildDir));
 const className: string = config.class;
 const protoFiles: string[] = config.proto.map((protoPath: string) => path.join('proto', path.basename(protoPath)));
 const protoTs = protoFiles.map(item => item.replace('.proto','.ts'));
+const wasm = path.join('release',`${className}.wasm`);
+const abi = `${className.toLocaleLowerCase()}-abi.json`;
 
 const filesToCopy: string[] = [
   `I${className}.ts`,
   `${className}.ts`,
   ...protoFiles,
   ...protoTs,
-  'account-abi.json',
-  'release/Account.wasm'
+  abi,
+  wasm
 ];
 
 const distDir = 'dist';
