@@ -23,7 +23,7 @@ const distDir = 'dist';
 const protoDir = path.join(distDir, 'proto', path.basename(protoFiles[0], '.proto'));
 
 fs.mkdirSync(protoDir, { recursive: true });
-fs.mkdirSync(path.join(distDir,'release'));
+fs.mkdirSync(path.join(distDir,'release'), { recursive: true });
 
 filesToCopy.forEach(file => {
   const sourcePath = path.join(buildDir, file);

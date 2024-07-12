@@ -994,15 +994,15 @@
     google-protobuf "^3.21.0"
 
 "@roamin/local-koinos@^0.4.15":
-  version "0.4.16"
-  resolved "https://registry.yarnpkg.com/@roamin/local-koinos/-/local-koinos-0.4.16.tgz#98f4f1b1c664b3caccf72f81e89e50412b740182"
-  integrity sha512-X3KE6itGLF4uquTegY1m1fvCfq8xOuyqGOgrLlSVXNOS1ldkVNY40PAKYW9kN/U7pQnzVgvMqyapNVcQVGiUbw==
+  version "0.4.15"
+  resolved "https://registry.yarnpkg.com/@roamin/local-koinos/-/local-koinos-0.4.15.tgz#2be558af12c0ec19256068c41e4a46f9ab54275e"
+  integrity sha512-OufJDoAIl6gOHv1x+UFG7UfBdRPv5iGI8QweMtrnAzBnZYwtDQIXwUjkgOdNn1RJUtlL+AeWcI4XhGKn08U7MA==
   dependencies:
     "@koinos/proto-js" "^1.0.3"
     amqplib "^0.9.1"
     chalk "4.1.2"
     commander "^9.0.0"
-    koilib "5.6.1"
+    koilib "^5.6.1"
 
 "@roamin/protoc@^2.4.0":
   version "2.5.0"
@@ -3980,18 +3980,6 @@ klaw@^3.0.0:
   integrity sha512-0Fo5oir+O9jnXu5EefYbVK+mHMBeEVEy2cmctR1O1NECcCkPRreJKrS6Qt/j3KC2C148Dfo9i3pCmCMsdqGr0g==
   dependencies:
     graceful-fs "^4.1.9"
-
-koilib@5.6.1:
-  version "5.6.1"
-  resolved "https://registry.yarnpkg.com/koilib/-/koilib-5.6.1.tgz#72f61455959ce00c23ec19d99467cb75e999985b"
-  integrity sha512-Ulon6gOYIVf11XzQ18BwY/p6VHdQ3JyIgqgZ/RsATg/VuUUvWoZ8w4nPNBBMohPhXh5lmu/O1E/wQ8BGxfpEvg==
-  dependencies:
-    "@noble/hashes" "^1.3.1"
-    "@noble/secp256k1" "^1.7.1"
-    "@roamin/koinos-pb-to-proto" "^0.0.3"
-    cross-fetch "^3.1.5"
-    multibase "^4.0.6"
-    protobufjs "^7.2.4"
 
 koilib@^5.6.1:
   version "5.7.0"

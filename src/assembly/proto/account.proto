@@ -5,7 +5,7 @@ package account;
 import "koinos/options.proto";
 
 message mod {
-
+    
 }
 
 message operation {
