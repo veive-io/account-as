@@ -1,17 +1,17 @@
-import { System, Storage, authority, Arrays, Protobuf, StringBytes } from "@koinos/sdk-as";
+import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
 import { modhooks, IModHooks } from "@veive/mod-hooks-as";
 import { modexecution, IModExecution } from "@veive/mod-execution-as";
 import { modvalidation, IModValidation } from "@veive/mod-validation-as";
 import { mod, IMod } from "@veive/mod-as";
 import { account } from "./proto/account";
-
-const MODULE_VALIDATE_SPACE_ID = 1;
-const MODULE_HOOKS_SPACE_ID = 2;
-const MODULE_EXECUTE_SPACE_ID = 3;
-
-const MODULE_TYPE_VALIDATOR = 1;
-const MODULE_TYPE_HOOK = 2;
-const MODULE_TYPE_EXECUTOR = 3;
+import { 
+  MODULE_VALIDATE_SPACE_ID, 
+  MODULE_HOOKS_SPACE_ID, 
+  MODULE_EXECUTE_SPACE_ID,
+  MODULE_TYPE_VALIDATOR,
+  MODULE_TYPE_HOOK,
+  MODULE_TYPE_EXECUTOR
+} from "./Constants";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
@@ -115,12 +115,15 @@ export class Account {
   install_module(args: account.install_module_args): void {
     this._require_only_self();
 
+    const module = new IMod(args.contract_id!);
+    const manifest = module.manifest();
+
     const new_module = new account.mod();
-    if (args.module_type_id == MODULE_TYPE_VALIDATOR) {
+    if (manifest.type_id == MODULE_TYPE_VALIDATOR) {
       this.mod_validate.put(args.contract_id!, new_module);
-    } else if (args.module_type_id == MODULE_TYPE_HOOK) {
+    } else if (manifest.type_id == MODULE_TYPE_HOOK) {
       this.mod_hooks.put(args.contract_id!, new_module);
-    } else if (args.module_type_id == MODULE_TYPE_EXECUTOR) {
+    } else if (manifest.type_id == MODULE_TYPE_EXECUTOR) {
       this.mod_execute.put(args.contract_id!, new_module);
     } else {
       System.fail('unsupported module_type_id');
@@ -131,7 +134,6 @@ export class Account {
       data = args.data!;
     }
 
-    const module = new IMod(args.contract_id!);
     const on_install_args = new mod.on_install_args(data);
     module.on_install(on_install_args);
   }
@@ -146,11 +148,14 @@ export class Account {
   uninstall_module(args: account.uninstall_module_args): void {
     this._require_only_self();
 
-    if (args.module_type_id == MODULE_TYPE_VALIDATOR) {
+    const module = new IMod(args.contract_id!);
+    const manifest = module.manifest();
+
+    if (manifest.type_id == MODULE_TYPE_VALIDATOR) {
       this.mod_validate.remove(args.contract_id!);
-    } else if (args.module_type_id == MODULE_TYPE_HOOK) {
+    } else if (manifest.type_id == MODULE_TYPE_HOOK) {
       this.mod_hooks.remove(args.contract_id!);
-    } else if (args.module_type_id == MODULE_TYPE_EXECUTOR) {
+    } else if (manifest.type_id == MODULE_TYPE_EXECUTOR) {
       this.mod_execute.remove(args.contract_id!);
     } else {
       System.fail('unsupported module_type_id');
@@ -161,7 +166,6 @@ export class Account {
       data = args.data!;
     }
 
-    const module = new IMod(args.contract_id!);
     const on_uninstall_args = new mod.on_uninstall_args(data);
     module.on_uninstall(on_uninstall_args);
   }

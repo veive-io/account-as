@@ -203,11 +203,6 @@ export namespace account {
 
   export class install_module_args {
     static encode(message: install_module_args, writer: Writer): void {
-      if (message.module_type_id != 0) {
-        writer.uint32(8);
-        writer.uint32(message.module_type_id);
-      }
-
       const unique_name_contract_id = message.contract_id;
       if (unique_name_contract_id !== null) {
         writer.uint32(18);
@@ -228,10 +223,6 @@ export namespace account {
       while (reader.ptr < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
-            message.module_type_id = reader.uint32();
-            break;
-
           case 2:
             message.contract_id = reader.bytes();
             break;
@@ -249,16 +240,13 @@ export namespace account {
       return message;
     }
 
-    module_type_id: u32;
     contract_id: Uint8Array | null;
     data: Uint8Array | null;
 
     constructor(
-      module_type_id: u32 = 0,
       contract_id: Uint8Array | null = null,
       data: Uint8Array | null = null
     ) {
-      this.module_type_id = module_type_id;
       this.contract_id = contract_id;
       this.data = data;
     }
@@ -266,11 +254,6 @@ export namespace account {
 
   export class uninstall_module_args {
     static encode(message: uninstall_module_args, writer: Writer): void {
-      if (message.module_type_id != 0) {
-        writer.uint32(8);
-        writer.uint32(message.module_type_id);
-      }
-
       const unique_name_contract_id = message.contract_id;
       if (unique_name_contract_id !== null) {
         writer.uint32(18);
@@ -291,10 +274,6 @@ export namespace account {
       while (reader.ptr < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
-            message.module_type_id = reader.uint32();
-            break;
-
           case 2:
             message.contract_id = reader.bytes();
             break;
@@ -312,16 +291,13 @@ export namespace account {
       return message;
     }
 
-    module_type_id: u32;
     contract_id: Uint8Array | null;
     data: Uint8Array | null;
 
     constructor(
-      module_type_id: u32 = 0,
       contract_id: Uint8Array | null = null,
       data: Uint8Array | null = null
     ) {
-      this.module_type_id = module_type_id;
       this.contract_id = contract_id;
       this.data = data;
     }

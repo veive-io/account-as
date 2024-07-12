@@ -13,6 +13,7 @@ const abi = `${className.toLocaleLowerCase()}-abi.json`;
 const filesToCopy: string[] = [
   `I${className}.ts`,
   `${className}.ts`,
+  'Constants.ts',
   ...protoFiles,
   ...protoTs,
   abi,
@@ -47,6 +48,7 @@ const indexContent = `
 export { ${className} } from "./${className}"
 export { ${className} as I${className} } from "./I${className}"
 export { ${path.basename(protoFiles[0], '.proto')} } from "./proto/${path.basename(protoFiles[0], '.proto')}"
+export * from "./Constants"
 `;
 
 fs.writeFileSync(path.join(distDir, 'index.ts'), indexContent.trim());
