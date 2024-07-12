@@ -2,16 +2,15 @@ import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
 import { modhooks, IModHooks } from "@veive/mod-hooks-as";
 import { modexecution, IModExecution } from "@veive/mod-execution-as";
 import { modvalidation, IModValidation } from "@veive/mod-validation-as";
-import { mod, IMod } from "@veive/mod-as";
 import { account } from "./proto/account";
 import { 
   MODULE_VALIDATION_SPACE_ID, 
   MODULE_HOOKS_SPACE_ID, 
-  MODULE_EXECUTION_SPACE_ID,
-  MODULE_TYPE_VALIDATION,
-  MODULE_TYPE_HOOK,
-  MODULE_TYPE_EXECUTION
+  MODULE_EXECUTION_SPACE_ID
 } from "./Constants";
+import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
+import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
+import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
@@ -115,27 +114,41 @@ export class Account {
   install_module(args: account.install_module_args): void {
     this._require_only_self();
 
-    const module = new IMod(args.contract_id!);
-    const manifest = module.manifest();
-
-    const new_module = new account.mod();
-    if (manifest.type_id == MODULE_TYPE_VALIDATION) {
-      this.mod_validate.put(args.contract_id!, new_module);
-    } else if (manifest.type_id == MODULE_TYPE_HOOK) {
-      this.mod_hooks.put(args.contract_id!, new_module);
-    } else if (manifest.type_id == MODULE_TYPE_EXECUTION) {
-      this.mod_execute.put(args.contract_id!, new_module);
-    } else {
-      System.fail('unsupported module_type_id');
-    }
-
     let data = new Uint8Array(0);
     if (args.data && args.data!.length > 0) {
       data = args.data!;
     }
 
-    const on_install_args = new mod.on_install_args(data);
-    module.on_install(on_install_args);
+    const mod = new account.mod();
+
+    switch (args.module_type_id) {
+      case MODULE_VALIDATION_TYPE_ID:
+        const validator = new IModValidation(args.contract_id!);
+        const validator_manifest = validator.manifest();
+        System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_validate.put(args.contract_id!, mod);
+        validator.on_install(new modvalidation.on_install_args(data));
+        break;
+    
+      case MODULE_HOOKS_TYPE_ID:
+        const hooks = new IModHooks(args.contract_id!);
+        const hooks_manifest = hooks.manifest();
+        System.require(hooks_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_hooks.put(args.contract_id!, mod);
+        hooks.on_install(new modhooks.on_install_args(data));
+        break;
+
+      case MODULE_EXECUTION_TYPE_ID:
+        const execution = new IModExecution(args.contract_id!);
+        const execution_manifest = execution.manifest();
+        System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_execute.put(args.contract_id!, mod);
+        execution.on_install(new modexecution.on_install_args(data));
+        break;
+    }
   }
 
   /**
@@ -148,26 +161,39 @@ export class Account {
   uninstall_module(args: account.uninstall_module_args): void {
     this._require_only_self();
 
-    const module = new IMod(args.contract_id!);
-    const manifest = module.manifest();
-
-    if (manifest.type_id == MODULE_TYPE_VALIDATION) {
-      this.mod_validate.remove(args.contract_id!);
-    } else if (manifest.type_id == MODULE_TYPE_HOOK) {
-      this.mod_hooks.remove(args.contract_id!);
-    } else if (manifest.type_id == MODULE_TYPE_EXECUTION) {
-      this.mod_execute.remove(args.contract_id!);
-    } else {
-      System.fail('unsupported module_type_id');
-    }
-
     let data = new Uint8Array(0);
     if (args.data && args.data!.length > 0) {
       data = args.data!;
     }
 
-    const on_uninstall_args = new mod.on_uninstall_args(data);
-    module.on_uninstall(on_uninstall_args);
+    switch (args.module_type_id) {
+      case MODULE_VALIDATION_TYPE_ID:
+        const validator = new IModValidation(args.contract_id!);
+        const validator_manifest = validator.manifest();
+        System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_validate.remove(args.contract_id!);
+        validator.on_uninstall(new modvalidation.on_uninstall_args(data));
+        break;
+    
+      case MODULE_HOOKS_TYPE_ID:
+        const hooks = new IModHooks(args.contract_id!);
+        const hooks_manifest = hooks.manifest();
+        System.require(hooks_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_hooks.remove(args.contract_id!);
+        hooks.on_uninstall(new modhooks.on_uninstall_args(data));
+        break;
+
+      case MODULE_EXECUTION_TYPE_ID:
+        const execution = new IModExecution(args.contract_id!);
+        const execution_manifest = execution.manifest();
+        System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_execute.remove(args.contract_id!);
+        execution.on_uninstall(new modexecution.on_uninstall_args(data));
+        break;
+    }
   }
 
   /**
@@ -179,11 +205,11 @@ export class Account {
    */
   is_module_installed(args: account.is_module_installed_args): account.is_module_installed_result {
     const result = new account.is_module_installed_result();
-    if (args.module_type_id == MODULE_TYPE_VALIDATION) {
+    if (args.module_type_id == MODULE_VALIDATION_TYPE_ID) {
       result.value = this.mod_validate.has(args.contract_id!);
-    } else if (args.module_type_id == MODULE_TYPE_HOOK) { 
+    } else if (args.module_type_id == MODULE_HOOKS_TYPE_ID) { 
       result.value = this.mod_hooks.has(args.contract_id!);
-    } else if (args.module_type_id == MODULE_TYPE_EXECUTION) {
+    } else if (args.module_type_id == MODULE_EXECUTION_TYPE_ID) {
       result.value = this.mod_execute.has(args.contract_id!);
     } else {
       System.fail('unsupported module_type_id');
@@ -202,9 +228,9 @@ export class Account {
    */
   is_module_type_supported(args: account.is_module_type_supported_args): account.is_module_type_supported_result {
     const result = new account.is_module_type_supported_result();
-    result.value = args.module_type_id == MODULE_TYPE_VALIDATION ||
-      args.module_type_id == MODULE_TYPE_HOOK ||
-      args.module_type_id == MODULE_TYPE_EXECUTION;
+    result.value = args.module_type_id == MODULE_VALIDATION_TYPE_ID ||
+      args.module_type_id == MODULE_HOOKS_TYPE_ID ||
+      args.module_type_id == MODULE_EXECUTION_TYPE_ID;
 
     return result;
   }

@@ -27,11 +27,13 @@ message execute_user_args {
 }
 
 message install_module_args {
+    uint32 module_type_id = 1;
     bytes contract_id = 2 [(koinos.btype) = ADDRESS];
     bytes data = 3;
 }
 
 message uninstall_module_args {
+    uint32 module_type_id = 1;
     bytes contract_id = 2 [(koinos.btype) = ADDRESS];
     bytes data = 3;
 }
