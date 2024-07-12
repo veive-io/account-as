@@ -469,13 +469,14 @@ export class Account {
           op.contract_id = operation.contract_id;
           op.entry_point = operation.entry_point;
           op.args = operation.args;
+
           args.operation = op;
           args.sender = caller;
   
           const module = new IModHooks(hooks[i]);
           const res = module.pre_check(args);
   
-          if (res.value!) {
+          if (res && res.value && res.value!.length > 0) {
             data.push(res.value!);
           } else {
             data.push(new Uint8Array(0));
