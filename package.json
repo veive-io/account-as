@@ -1,6 +1,6 @@
 {
   "name": "@veive/account-as",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Veive smart account",
   "author": {
     "name": "veive",
@@ -32,7 +32,8 @@
     "@koinosbox/hdkoinos": "1.0.1",
     "@veive/mod-execution-as": "^1.0.5",
     "@veive/mod-hooks-as": "^1.0.6",
-    "@veive/mod-validation-as": "^1.0.11",
+    "@veive/mod-sign-as": "^1.0.0",
+    "@veive/mod-validation-as": "^1.0.13",
     "koilib": "^8.0.0",
     "koinos-precompiler-as": "^1.6.0"
   },
