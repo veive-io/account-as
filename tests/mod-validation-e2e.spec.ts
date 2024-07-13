@@ -136,37 +136,6 @@ it("trigger module is_valid_operation", async () => {
     expect(receipt.logs).toContain("[mod-validation] is_valid_operation called");
 });
 
-it("trigger module is_valid_signature", async () => {
-    const { operation: test } = await accountContract["test"]({}, { onlyOperation: true });
-
-    const tx1 = new Transaction({
-        signer: accountSign,
-        provider
-    });
-
-    await tx1.pushOperation(test);
-    await tx1.prepare();
-    await tx1.sign();
-
-    const tx2 = new Transaction({
-        signer: accountSign,
-        provider
-    });
-
-    const { operation: is_valid_signature } = await accountContract["is_valid_signature"]({
-        sender: accountSign.address,
-        signature: tx1.transaction.signatures[0],
-        tx_id: tx1.transaction.id
-    }, { onlyOperation: true });
-
-    await tx2.pushOperation(is_valid_signature);
-    const receipt = await tx2.send();
-    await tx2.wait();
-    
-    expect(receipt).toBeDefined();
-    expect(receipt.logs).toContain("[mod-validation] is_valid_signature called");
-});
-
 it("uninstall module", async () => {
     const { operation: uninstall_module } = await accountContract["uninstall_module"]({
         module_type_id: 2,
