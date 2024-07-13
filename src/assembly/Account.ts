@@ -2,11 +2,13 @@ import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
 import { modhooks, IModHooks } from "@veive/mod-hooks-as";
 import { modexecution, IModExecution } from "@veive/mod-execution-as";
 import { modvalidation, IModValidation } from "@veive/mod-validation-as";
+import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
 import { 
   MODULE_VALIDATION_SPACE_ID, 
   MODULE_HOOKS_SPACE_ID, 
-  MODULE_EXECUTION_SPACE_ID
+  MODULE_EXECUTION_SPACE_ID,
+  MODULE_SIGN_SPACE_ID
 } from "./Constants";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
@@ -17,10 +19,19 @@ export class Account {
 
   contractId: Uint8Array = System.getContractId();
 
-  mod_validate: Storage.Map<Uint8Array, account.mod> =
+  mod_validation: Storage.Map<Uint8Array, account.mod> =
     new Storage.Map(
       this.contractId,
       MODULE_VALIDATION_SPACE_ID,
+      account.mod.decode,
+      account.mod.encode,
+      () => new account.mod()
+    );
+
+  mod_sign: Storage.Map<Uint8Array, account.mod> =
+    new Storage.Map(
+      this.contractId,
+      MODULE_SIGN_SPACE_ID,
       account.mod.decode,
       account.mod.encode,
       () => new account.mod()
@@ -35,7 +46,7 @@ export class Account {
       () => new account.mod()
     );
 
-  mod_execute: Storage.Map<Uint8Array, account.mod> =
+  mod_execution: Storage.Map<Uint8Array, account.mod> =
     new Storage.Map(
       this.contractId,
       MODULE_EXECUTION_SPACE_ID,
@@ -127,7 +138,7 @@ export class Account {
         const validator_manifest = validator.manifest();
         System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
 
-        this.mod_validate.put(args.contract_id!, mod);
+        this.mod_validation.put(args.contract_id!, mod);
         validator.on_install(new modvalidation.on_install_args(data));
         break;
     
@@ -145,8 +156,17 @@ export class Account {
         const execution_manifest = execution.manifest();
         System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
 
-        this.mod_execute.put(args.contract_id!, mod);
+        this.mod_execution.put(args.contract_id!, mod);
         execution.on_install(new modexecution.on_install_args(data));
+        break;
+
+      case MODULE_SIGN_TYPE_ID:
+        const sign = new IModSign(args.contract_id!);
+        const sign_manifest = sign.manifest();
+        System.require(sign_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_sign.put(args.contract_id!, mod);
+        sign.on_install(new modsign.on_install_args(data));
         break;
     }
   }
@@ -172,7 +192,7 @@ export class Account {
         const validator_manifest = validator.manifest();
         System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
 
-        this.mod_validate.remove(args.contract_id!);
+        this.mod_validation.remove(args.contract_id!);
         validator.on_uninstall(new modvalidation.on_uninstall_args(data));
         break;
     
@@ -190,8 +210,17 @@ export class Account {
         const execution_manifest = execution.manifest();
         System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
 
-        this.mod_execute.remove(args.contract_id!);
+        this.mod_execution.remove(args.contract_id!);
         execution.on_uninstall(new modexecution.on_uninstall_args(data));
+        break;
+
+      case MODULE_SIGN_TYPE_ID:
+        const sign = new IModSign(args.contract_id!);
+        const sign_manifest = sign.manifest();
+        System.require(sign_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
+
+        this.mod_sign.remove(args.contract_id!);
+        sign.on_uninstall(new modsign.on_uninstall_args(data));
         break;
     }
   }
@@ -206,11 +235,13 @@ export class Account {
   is_module_installed(args: account.is_module_installed_args): account.is_module_installed_result {
     const result = new account.is_module_installed_result();
     if (args.module_type_id == MODULE_VALIDATION_TYPE_ID) {
-      result.value = this.mod_validate.has(args.contract_id!);
+      result.value = this.mod_validation.has(args.contract_id!);
     } else if (args.module_type_id == MODULE_HOOKS_TYPE_ID) { 
       result.value = this.mod_hooks.has(args.contract_id!);
     } else if (args.module_type_id == MODULE_EXECUTION_TYPE_ID) {
-      result.value = this.mod_execute.has(args.contract_id!);
+      result.value = this.mod_execution.has(args.contract_id!);
+    } else if (args.module_type_id == MODULE_SIGN_TYPE_ID) {
+      result.value = this.mod_sign.has(args.contract_id!);
     } else {
       System.fail('unsupported module_type_id');
     }
@@ -230,7 +261,8 @@ export class Account {
     const result = new account.is_module_type_supported_result();
     result.value = args.module_type_id == MODULE_VALIDATION_TYPE_ID ||
       args.module_type_id == MODULE_HOOKS_TYPE_ID ||
-      args.module_type_id == MODULE_EXECUTION_TYPE_ID;
+      args.module_type_id == MODULE_EXECUTION_TYPE_ID ||
+      args.module_type_id == MODULE_SIGN_TYPE_ID;
 
     return result;
   }
@@ -246,7 +278,7 @@ export class Account {
   get_modules(): account.get_modules_result {
     const result = new account.get_modules_result([]);
 
-    const validateModules = this.mod_validate.getManyKeys(new Uint8Array(0));
+    const validateModules = this.mod_validation.getManyKeys(new Uint8Array(0));
     for (let i = 0; i < validateModules.length; i++) {
       result.value.push(validateModules[i]);
     }
@@ -256,9 +288,14 @@ export class Account {
       result.value.push(hookModules[i]);
     }
 
-    const executeModules = this.mod_execute.getManyKeys(new Uint8Array(0));
+    const executeModules = this.mod_execution.getManyKeys(new Uint8Array(0));
     for (let i = 0; i < executeModules.length; i++) {
       result.value.push(executeModules[i]);
+    }
+
+    const signModules = this.mod_sign.getManyKeys(new Uint8Array(0));
+    for (let i = 0; i < signModules.length; i++) {
+      result.value.push(signModules[i]);
     }
 
     return result;
@@ -370,7 +407,7 @@ export class Account {
    */
   _require_not_executor(): void {
     const caller = System.getCaller().caller;
-    System.require(this.mod_execute.has(caller) == false, "caller cannot be registered execution module");
+    System.require(this.mod_execution.has(caller) == false, "caller cannot be registered execution module");
   }
 
   /**
@@ -381,7 +418,7 @@ export class Account {
    */
   _require_only_xecutor(): void {
     const caller = System.getCaller().caller;
-    System.require(this.mod_execute.has(caller) == true, "caller must be a module");
+    System.require(this.mod_execution.has(caller) == true, "caller must be a module");
   }
 
   /**
@@ -403,32 +440,32 @@ export class Account {
   }
 
   /**
-   * Validates the signature using all registered validator modules.
+   * Validates the signature using all registered sign modules.
    * 
    * @param sender The sender's address.
    * @param signature The signature to validate.
    * @param tx_id The transaction ID.
-   * @returns `true` if any validator module validates the signature successfully, otherwise `false`.
+   * @returns `true` if any sign module validates the signature successfully, otherwise `false`.
    */
   _validate_signature(sender: Uint8Array, signature: Uint8Array, tx_id: Uint8Array): boolean {
-    const validators = this.mod_validate.getManyKeys(new Uint8Array(0));
+    const modules = this.mod_sign.getManyKeys(new Uint8Array(0));
 
-    if (validators && validators.length > 0) {
+    if (modules && modules.length > 0) {
       const caller = System.getCaller().caller;
 
-      const args = new modvalidation.is_valid_signature_args();
+      const args = new modsign.is_valid_signature_args();
       args.sender = sender;
       args.signature = signature;
       args.tx_id = tx_id;
       
-      for (let i = 0; i < validators.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, validators[i])) {
+      for (let i = 0; i < modules.length; i++) {
+        if (caller && caller.length > 0 && Arrays.equal(caller, modules[i])) {
           continue;
         }
   
-        const validatorModule = this.mod_validate.get(validators[i]);
+        const validatorModule = this.mod_sign.get(modules[i]);
         if (validatorModule) {
-          const module = new IModValidation(validators[i]);
+          const module = new IModSign(modules[i]);
           const res = module.is_valid_signature(args);
   
           if (res.value == true) {
@@ -448,7 +485,7 @@ export class Account {
    * @returns `true` if all validator modules validate the operation successfully, otherwise `false`.
    */
   _validate_op(operation: account.operation): boolean {
-    const validators = this.mod_validate.getManyKeys(new Uint8Array(0));
+    const validators = this.mod_validation.getManyKeys(new Uint8Array(0));
 
     if (validators && validators.length > 0) {
       const caller = System.getCaller().caller;
@@ -465,7 +502,7 @@ export class Account {
           continue;
         }
   
-        const validatorModule = this.mod_validate.get(validators[i]);
+        const validatorModule = this.mod_validation.get(validators[i]);
         if (validatorModule) {
           const module = new IModValidation(validators[i]);
           const res = module.is_valid_operation(args);
@@ -558,7 +595,7 @@ export class Account {
    * @param operation The operation to be executed.
    */
   _execute(operation: account.operation): void {
-    const executors = this.mod_execute.getManyKeys(new Uint8Array(0));
+    const executors = this.mod_execution.getManyKeys(new Uint8Array(0));
 
     if (executors && executors.length > 0) {
       const caller = System.getCaller().caller;
@@ -568,7 +605,7 @@ export class Account {
           continue;
         }
   
-        const executeModule = this.mod_execute.get(executors[i]);
+        const executeModule = this.mod_execution.get(executors[i]);
         if (executeModule) {
           const args = new modexecution.execute_args();
           const op = new modexecution.operation();
