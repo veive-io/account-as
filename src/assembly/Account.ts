@@ -314,17 +314,27 @@ export class Account {
    * Authorizes an operation.
    * 
    * This method checks if a given operation is authorized based on the type and the provided arguments.
+   * 
+   * @external
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
     const result = new authority.authorize_result(false);
 
     if (args.type == authority.authorization_type.contract_call) {
-      const operation = new account.operation();
-      operation.contract_id = args.call.contract_id;
-      operation.entry_point = args.call.entry_point;
-      operation.args = args.call.data;
+      System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
 
-      result.value = this.is_valid_operation(new account.is_valid_operation_args(operation));
+      const operation = new account.operation();
+      operation.contract_id = args.call!.contract_id;
+      operation.entry_point = args.call!.entry_point;
+      operation.args = args.call!.data;
+
+      result.value = this.is_valid_operation(new account.is_valid_operation_args(operation)).value;
+
+      if (result.value == true) {
+        System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
+      } else {
+        System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
+      }
     }
 
     return result;
