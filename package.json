@@ -1,6 +1,6 @@
 {
   "name": "@veive/account-as",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Veive smart account",
   "author": {
     "name": "veive",
@@ -64,7 +64,8 @@
     "build": "yarn precompile && yarn asbuild",
     "deploy": "ts-node scripts/deploy.ts",
     "keys": "node generateKeys.js",
-    "lint": "eslint --max-warnings 0 --ext ts \"*/assembly/**/*.ts\""
+    "lint": "eslint --max-warnings 0 --ext ts \"*/assembly/**/*.ts\"",
+    "prepublishOnly": "yarn build && yarn dist"
   },
   "config": {
     "protocVersion": "25.2"
