@@ -2,6 +2,15 @@
 
 The Veive SCA Account project provides a modular smart account implementation for the Koinos blockchain, inspired by the ERC-7579 standard. This modular approach allows for flexible, pluggable functionality through different types of modules that can be installed to extend the capabilities of the smart account.
 
+## Differences with the ERC-7579 Standard
+
+While implementing the standard, there are differences due to Koinos being different from EVM blockchains.
+
+- **No EntryPoint**: In the ERC-7579 standard, all requests are routed through a single contract called EntryPoint, which performs all operation checks by engaging validators. In Koinos, the user's account is called directly to execute operations. As a result, validators are engaged immediately within the execution methods.
+- **Separate Sign Module**: In our standard, we prefer to separate signature validation modules from operation validation modules because their processing differs. All operation validators must validate the operation, whereas for signature validators, a single positive validation is sufficient to proceed with the operation.
+- **Authorize**: Due to the previous points, Koinos provides an automatic mechanism that calls the "authorize" method of the account to verify all operations launched internally.
+- **Method Input/Output**: Generally, the input/output parameters of the methods are closely tied to the internal workings of the blockchain, so they have been modified from the general standard to fit the characteristics of Koinos.
+
 ## Overview
 
 ### Modular Smart Accounts
@@ -110,6 +119,9 @@ Checks if a module type is supported by the smart account. Returns a boolean ind
 
 #### `get_modules`
 Retrieves a list of all installed modules. This method returns a list of contract IDs for the installed modules.
+
+#### `authorize`
+This method does not belong to the standard but is closely related to Koinos. The method is called internally by Koinos whenever a `checkAuthority` call is made to verify the authenticity of the operation. The method engages validators to validate the operation. Read the section on differences with the standard for more details.
 
 ## Scripts
 
