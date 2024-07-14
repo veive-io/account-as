@@ -126,7 +126,7 @@ yarn build
 To run the tests, run:
 
 ```bash
-yarn test
+yarn jest
 ```
 
 ### Dist
