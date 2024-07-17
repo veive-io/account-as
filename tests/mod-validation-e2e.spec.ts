@@ -85,7 +85,7 @@ it("install module error: caller must be itself", async () => {
 
 it("install module", async () => {
     const { operation: install_module } = await accountContract["install_module"]({
-        module_type_id: 2,
+        module_type_id: 1,
         contract_id: modSign.address
     }, { onlyOperation: true });
 
@@ -138,7 +138,7 @@ it("trigger module is_valid_operation", async () => {
 
 it("uninstall module", async () => {
     const { operation: uninstall_module } = await accountContract["uninstall_module"]({
-        module_type_id: 2,
+        module_type_id: 1,
         contract_id: modSign.address
     }, { onlyOperation: true });
 

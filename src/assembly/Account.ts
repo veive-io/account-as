@@ -1,7 +1,7 @@
 import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
-import { modhooks, IModHooks } from "@veive/mod-hooks-as";
-import { modexecution, IModExecution } from "@veive/mod-execution-as";
-import { modvalidation, IModValidation } from "@veive/mod-validation-as";
+import { modhooks, IModHooks, MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
+import { modexecution, IModExecution, MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
+import { modvalidation, IModValidation, MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
 import { 
@@ -10,9 +10,6 @@ import {
   MODULE_EXECUTION_SPACE_ID,
   MODULE_SIGN_SPACE_ID
 } from "./Constants";
-import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
-import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
-import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
@@ -482,7 +479,7 @@ export class Account {
    * Validates the operation using all registered validator modules.
    * 
    * @param operation The operation to validate.
-   * @returns `true` if all validator modules validate the operation successfully, otherwise `false`.
+   * @returns `true` if there is a validator that validates the operation successfully, otherwise `false`.
    */
   _validate_op(operation: account.operation): boolean {
     const validators = this.mod_validation.getManyKeys(new Uint8Array(0));
@@ -507,14 +504,18 @@ export class Account {
           const module = new IModValidation(validators[i]);
           const res = module.is_valid_operation(args);
   
-          if (res.value == false) {
-            return false;
+          if (res.value == true) {
+            return true;
           }
         }
       }
+
+    // the first time you don't have validators and you need to install the first module
+    } else {
+      return true;
     }
 
-    return true;
+    return false;
   }
 
   /**
