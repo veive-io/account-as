@@ -802,26 +802,24 @@ export namespace account {
     }
   }
 
-  export class selector_mods {
-    static encode(message: selector_mods, writer: Writer): void {
-      const unique_name_mods = message.mods;
-      if (unique_name_mods.length !== 0) {
-        for (let i = 0; i < unique_name_mods.length; ++i) {
-          writer.uint32(10);
-          writer.bytes(unique_name_mods[i]);
-        }
+  export class module_validation {
+    static encode(message: module_validation, writer: Writer): void {
+      const unique_name_value = message.value;
+      if (unique_name_value !== null) {
+        writer.uint32(10);
+        writer.bytes(unique_name_value);
       }
     }
 
-    static decode(reader: Reader, length: i32): selector_mods {
+    static decode(reader: Reader, length: i32): module_validation {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new selector_mods();
+      const message = new module_validation();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.mods.push(reader.bytes());
+            message.value = reader.bytes();
             break;
 
           default:
@@ -833,10 +831,48 @@ export namespace account {
       return message;
     }
 
-    mods: Array<Uint8Array>;
+    value: Uint8Array | null;
 
-    constructor(mods: Array<Uint8Array> = []) {
-      this.mods = mods;
+    constructor(value: Uint8Array | null = null) {
+      this.value = value;
+    }
+  }
+
+  export class modules {
+    static encode(message: modules, writer: Writer): void {
+      const unique_name_value = message.value;
+      if (unique_name_value.length !== 0) {
+        for (let i = 0; i < unique_name_value.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_value[i]);
+        }
+      }
+    }
+
+    static decode(reader: Reader, length: i32): modules {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new modules();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.value.push(reader.bytes());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    value: Array<Uint8Array>;
+
+    constructor(value: Array<Uint8Array> = []) {
+      this.value = value;
     }
   }
 }

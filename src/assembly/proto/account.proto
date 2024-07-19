@@ -87,6 +87,10 @@ message selector {
     bytes contract_id = 2 [(koinos.btype) = ADDRESS];
 }
 
-message selector_mods {
-    repeated bytes mods = 1 [(koinos.btype) = ADDRESS];
+message module_validation {
+    bytes value = 1 [(koinos.btype) = ADDRESS];
+}
+
+message modules {
+    repeated bytes value = 1 [(koinos.btype) = ADDRESS];
 }

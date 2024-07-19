@@ -5,7 +5,6 @@ import { modvalidation, IModValidation, MODULE_VALIDATION_TYPE_ID } from "@veive
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
 import { 
-  MODULE_VALIDATION_SPACE_ID, 
   MODULE_HOOKS_SPACE_ID, 
   MODULE_EXECUTION_SPACE_ID,
   MODULE_SIGN_SPACE_ID
@@ -379,9 +378,10 @@ export class Account {
   _validate_op(operation: account.operation): boolean {
     const mod_manager = new ValidationModuleManager(this.contractId);
 
-    const validators = mod_manager.get_operation_modules(operation);
+    const validators = mod_manager.get_modules_by_operation(operation);
 
-    if (validators && validators.length > 0) {
+    if (validators.length > 0) {
+      const validator = validators[0];
       const caller = System.getCaller().caller;
 
       const op = new modvalidation.operation();
@@ -390,18 +390,15 @@ export class Account {
       op.args = operation.args;
   
       const args = new modvalidation.is_valid_operation_args(op);
-  
-      for (let i = 0; i < validators.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, validators[i])) {
-          continue;
-        }
-  
-        const module = new IModValidation(validators[i]);
-        const res = module.is_valid_operation(args);
+      if (caller && caller.length > 0 && Arrays.equal(caller, validator)) {
+        return true;
+      }
 
-        if (res.value == true) {
-          return true;
-        }
+      const module = new IModValidation(validator);
+      const res = module.is_valid_operation(args);
+
+      if (res.value == true) {
+        return true;
       }
 
     // the first time you don't have validators and you need to install the first module
