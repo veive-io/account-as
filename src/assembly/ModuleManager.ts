@@ -1,9 +1,8 @@
-import { IModValidation } from "@veive/mod-validation-as";
-import { System, Storage } from "@koinos/sdk-as";
+import { Storage } from "@koinos/sdk-as";
 import { account } from "./proto/account";
 import { ArrayBytes, selector_encode } from "./utils";
 
-export default abstract class ModuleManager {
+export default class ModuleManager {
 
     contract_id: Uint8Array;
     module_type_id: u32;
