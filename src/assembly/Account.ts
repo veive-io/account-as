@@ -10,20 +10,12 @@ import {
   MODULE_EXECUTION_SPACE_ID,
   MODULE_SIGN_SPACE_ID
 } from "./Constants";
+import ValidationModuleManager from "./ValidationModuleManager";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
 
   contractId: Uint8Array = System.getContractId();
-
-  mod_validation: Storage.Map<Uint8Array, account.mod> =
-    new Storage.Map(
-      this.contractId,
-      MODULE_VALIDATION_SPACE_ID,
-      account.mod.decode,
-      account.mod.encode,
-      () => new account.mod()
-    );
 
   mod_sign: Storage.Map<Uint8Array, account.mod> =
     new Storage.Map(
@@ -127,47 +119,10 @@ export class Account {
       data = args.data!;
     }
 
-    const mod = new account.mod();
-
-    switch (args.module_type_id) {
-      case MODULE_VALIDATION_TYPE_ID:
-        const validator = new IModValidation(args.contract_id!);
-        const validator_manifest = validator.manifest();
-        System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_validation.put(args.contract_id!, mod);
-        validator.on_install(new modvalidation.on_install_args(data));
-        break;
-    
-      case MODULE_HOOKS_TYPE_ID:
-        const hooks = new IModHooks(args.contract_id!);
-        const hooks_manifest = hooks.manifest();
-        System.require(hooks_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_hooks.put(args.contract_id!, mod);
-        hooks.on_install(new modhooks.on_install_args(data));
-        break;
-
-      case MODULE_EXECUTION_TYPE_ID:
-        const execution = new IModExecution(args.contract_id!);
-        const execution_manifest = execution.manifest();
-        System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_execution.put(args.contract_id!, mod);
-        execution.on_install(new modexecution.on_install_args(data));
-        break;
-
-      case MODULE_SIGN_TYPE_ID:
-        const sign = new IModSign(args.contract_id!);
-        const sign_manifest = sign.manifest();
-        System.require(sign_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_sign.put(args.contract_id!, mod);
-        sign.on_install(new modsign.on_install_args(data));
-        break;
-    }
+    const mod_manager = new ValidationModuleManager(this.contractId);
+    mod_manager.install_module(args.contract_id!, data);
   }
-
+  
   /**
    * Uninstalls a module of the specified type.
    * 
@@ -183,43 +138,8 @@ export class Account {
       data = args.data!;
     }
 
-    switch (args.module_type_id) {
-      case MODULE_VALIDATION_TYPE_ID:
-        const validator = new IModValidation(args.contract_id!);
-        const validator_manifest = validator.manifest();
-        System.require(validator_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_validation.remove(args.contract_id!);
-        validator.on_uninstall(new modvalidation.on_uninstall_args(data));
-        break;
-    
-      case MODULE_HOOKS_TYPE_ID:
-        const hooks = new IModHooks(args.contract_id!);
-        const hooks_manifest = hooks.manifest();
-        System.require(hooks_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_hooks.remove(args.contract_id!);
-        hooks.on_uninstall(new modhooks.on_uninstall_args(data));
-        break;
-
-      case MODULE_EXECUTION_TYPE_ID:
-        const execution = new IModExecution(args.contract_id!);
-        const execution_manifest = execution.manifest();
-        System.require(execution_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_execution.remove(args.contract_id!);
-        execution.on_uninstall(new modexecution.on_uninstall_args(data));
-        break;
-
-      case MODULE_SIGN_TYPE_ID:
-        const sign = new IModSign(args.contract_id!);
-        const sign_manifest = sign.manifest();
-        System.require(sign_manifest.type_id == args.module_type_id, "[account] wrong module_type_id");
-
-        this.mod_sign.remove(args.contract_id!);
-        sign.on_uninstall(new modsign.on_uninstall_args(data));
-        break;
-    }
+    const mod_manager = new ValidationModuleManager(this.contractId);
+    mod_manager.uninstall_module(args.contract_id!, data);
   }
 
   /**
@@ -228,21 +148,13 @@ export class Account {
    * This method returns a boolean indicating whether the specified module is installed, based on the module type.
    * 
    * @external
+   * @readonly
    */
   is_module_installed(args: account.is_module_installed_args): account.is_module_installed_result {
-    const result = new account.is_module_installed_result();
-    if (args.module_type_id == MODULE_VALIDATION_TYPE_ID) {
-      result.value = this.mod_validation.has(args.contract_id!);
-    } else if (args.module_type_id == MODULE_HOOKS_TYPE_ID) { 
-      result.value = this.mod_hooks.has(args.contract_id!);
-    } else if (args.module_type_id == MODULE_EXECUTION_TYPE_ID) {
-      result.value = this.mod_execution.has(args.contract_id!);
-    } else if (args.module_type_id == MODULE_SIGN_TYPE_ID) {
-      result.value = this.mod_sign.has(args.contract_id!);
-    } else {
-      System.fail('unsupported module_type_id');
-    }
+    const result = new account.is_module_installed_result(true);
 
+    const mod_manager = new ValidationModuleManager(this.contractId);
+    result.value = mod_manager.is_module_installed(args.contract_id!);
     return result;
   }
 
@@ -275,25 +187,8 @@ export class Account {
   get_modules(): account.get_modules_result {
     const result = new account.get_modules_result([]);
 
-    const validateModules = this.mod_validation.getManyKeys(new Uint8Array(0));
-    for (let i = 0; i < validateModules.length; i++) {
-      result.value.push(validateModules[i]);
-    }
-
-    const hookModules = this.mod_hooks.getManyKeys(new Uint8Array(0));
-    for (let i = 0; i < hookModules.length; i++) {
-      result.value.push(hookModules[i]);
-    }
-
-    const executeModules = this.mod_execution.getManyKeys(new Uint8Array(0));
-    for (let i = 0; i < executeModules.length; i++) {
-      result.value.push(executeModules[i]);
-    }
-
-    const signModules = this.mod_sign.getManyKeys(new Uint8Array(0));
-    for (let i = 0; i < signModules.length; i++) {
-      result.value.push(signModules[i]);
-    }
+    const mod_manager = new ValidationModuleManager(this.contractId);
+    result.value = mod_manager.get_modules();
 
     return result;
   }
@@ -482,7 +377,9 @@ export class Account {
    * @returns `true` if there is a validator that validates the operation successfully, otherwise `false`.
    */
   _validate_op(operation: account.operation): boolean {
-    const validators = this.mod_validation.getManyKeys(new Uint8Array(0));
+    const mod_manager = new ValidationModuleManager(this.contractId);
+
+    const validators = mod_manager.get_operation_modules(operation);
 
     if (validators && validators.length > 0) {
       const caller = System.getCaller().caller;
@@ -499,14 +396,11 @@ export class Account {
           continue;
         }
   
-        const validatorModule = this.mod_validation.get(validators[i]);
-        if (validatorModule) {
-          const module = new IModValidation(validators[i]);
-          const res = module.is_valid_operation(args);
-  
-          if (res.value == true) {
-            return true;
-          }
+        const module = new IModValidation(validators[i]);
+        const res = module.is_valid_operation(args);
+
+        if (res.value == true) {
+          return true;
         }
       }
 

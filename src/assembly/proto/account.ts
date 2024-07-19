@@ -754,4 +754,89 @@ export namespace account {
       this.data = data;
     }
   }
+
+  export class selector {
+    static encode(message: selector, writer: Writer): void {
+      if (message.entry_point != 0) {
+        writer.uint32(8);
+        writer.uint32(message.entry_point);
+      }
+
+      const unique_name_contract_id = message.contract_id;
+      if (unique_name_contract_id !== null) {
+        writer.uint32(18);
+        writer.bytes(unique_name_contract_id);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): selector {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new selector();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.entry_point = reader.uint32();
+            break;
+
+          case 2:
+            message.contract_id = reader.bytes();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    entry_point: u32;
+    contract_id: Uint8Array | null;
+
+    constructor(entry_point: u32 = 0, contract_id: Uint8Array | null = null) {
+      this.entry_point = entry_point;
+      this.contract_id = contract_id;
+    }
+  }
+
+  export class selector_mods {
+    static encode(message: selector_mods, writer: Writer): void {
+      const unique_name_mods = message.mods;
+      if (unique_name_mods.length !== 0) {
+        for (let i = 0; i < unique_name_mods.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_mods[i]);
+        }
+      }
+    }
+
+    static decode(reader: Reader, length: i32): selector_mods {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new selector_mods();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.mods.push(reader.bytes());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    mods: Array<Uint8Array>;
+
+    constructor(mods: Array<Uint8Array> = []) {
+      this.mods = mods;
+    }
+  }
 }

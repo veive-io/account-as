@@ -1797,10 +1797,10 @@
     koilib "^8.0.0"
     koinos-precompiler-as "^1.6.0"
 
-"@veive/mod-validation-as@^1.0.14":
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/@veive/mod-validation-as/-/mod-validation-as-1.0.14.tgz#1daa475e21febcfe02d729c5260f0b7a55c91735"
-  integrity sha512-oAIg1tvyN5kw2eWsrgCVQ1sOXU95NSbVgIU9FWY1aE+2PFSJ+hAc2PBc5ItjMyYcb1OxDIYR0EpnhRYHtAg+3Q==
+"@veive/mod-validation-as@^1.0.16":
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/@veive/mod-validation-as/-/mod-validation-as-1.0.16.tgz#d4bd8a76249d3f00a337e22e923132b00fed92e4"
+  integrity sha512-rZZPa0nheM4PlFGBIpvwP5E7Bo/57Cvh2rwwbPNGO/tr9KWyhZel3ABKlO9pMmkDXQXrDM+6/bqltLnQ3UygfQ==
   dependencies:
     "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
     "@koinosbox/contracts" "^2.1.4"

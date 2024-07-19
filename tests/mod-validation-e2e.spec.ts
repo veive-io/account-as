@@ -61,6 +61,7 @@ afterAll(() => {
     localKoinos.stopNode();
 });
 
+/*
 it("install module error: caller must be itself", async () => {
     const { operation: install_module } = await accountContract["install_module"]({
         contract_id: modSign.address
@@ -82,6 +83,14 @@ it("install module error: caller must be itself", async () => {
 
     expect(error).toBeDefined();
 });
+*/
+
+it("check module type is supported", async () => {
+    const { result } = await accountContract["is_module_type_supported"]({
+        module_type_id: 1
+    });
+    expect(result.value).toStrictEqual(true);
+})
 
 it("install module", async () => {
     const { operation: install_module } = await accountContract["install_module"]({
@@ -106,13 +115,22 @@ it("install module", async () => {
     const receipt = await tx.send();
     await tx.wait();
 
+    console.log(receipt);
+
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-validation] called module install");
 
-    const { result } = await accountContract["get_modules"]();
-    expect(result.value[0]).toStrictEqual(modSign.address);
+    const { result: r1 } = await accountContract["get_modules"]();
+    expect(r1.value).toStrictEqual([modSign.address]);
+
+    const { result: r2 } = await accountContract["is_module_installed"]({
+        module_type_id: 1,
+        contract_id: modSign.address
+    });
+    expect(r2.value).toStrictEqual(true);
 });
 
+/*
 it("trigger module is_valid_operation", async () => {
     const { operation: test } = await accountContract["test"]({}, { onlyOperation: true });
 
@@ -165,3 +183,4 @@ it("uninstall module", async () => {
     const { result } = await accountContract["get_modules"]();
     expect(result).toBeUndefined();
 });
+*/

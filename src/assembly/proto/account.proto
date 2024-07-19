@@ -81,3 +81,12 @@ message is_valid_operation_result {
 message init_account_args {
     bytes data = 1;
 }
+
+message selector {
+    uint32 entry_point = 1;
+    bytes contract_id = 2 [(koinos.btype) = ADDRESS];
+}
+
+message selector_mods {
+    repeated bytes mods = 1 [(koinos.btype) = ADDRESS];
+}
