@@ -130,7 +130,6 @@ it("install module", async () => {
     expect(r2.value).toStrictEqual(true);
 });
 
-/*
 it("trigger module is_valid_operation", async () => {
     const { operation: test } = await accountContract["test"]({}, { onlyOperation: true });
 
@@ -180,7 +179,12 @@ it("uninstall module", async () => {
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-validation] called module uninstall");
 
-    const { result } = await accountContract["get_modules"]();
-    expect(result).toBeUndefined();
+    const { result: r1 } = await accountContract["get_modules"]();
+    expect(r1).toBeUndefined();
+
+    const { result: r2 } = await accountContract["is_module_installed"]({
+        module_type_id: 1,
+        contract_id: modSign.address
+    });
+    expect(r2).toBeUndefined();
 });
-*/

@@ -41,6 +41,7 @@ export default class ModuleManagerValidation extends ModuleManager {
         contract_id: Uint8Array,
         data: Uint8Array
     ): void {
+
         const module_interface = new IModValidation(contract_id);
         const module = module_interface.manifest();
         System.require(module.type_id == this.module_type_id, "[account] wrong module_type_id");

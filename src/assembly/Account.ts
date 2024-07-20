@@ -27,24 +27,6 @@ export class Account {
       () => new account.mod()
     );
 
-  mod_hooks: Storage.Map<Uint8Array, account.mod> =
-    new Storage.Map(
-      this.contractId,
-      MODULE_HOOKS_SPACE_ID,
-      account.mod.decode,
-      account.mod.encode,
-      () => new account.mod()
-    );
-
-  mod_execution: Storage.Map<Uint8Array, account.mod> =
-    new Storage.Map(
-      this.contractId,
-      MODULE_EXECUTION_SPACE_ID,
-      account.mod.decode,
-      account.mod.encode,
-      () => new account.mod()
-    );
-
   /**
    * Executes the given operation after performing pre-checks and post-checks.
    * 
@@ -80,7 +62,7 @@ export class Account {
   execute_executor(args: account.execute_executor_args): void {
     this._require_valid_operation(args.operation!);
     this._require_not_self();
-    this._require_only_xecutor();
+    this._require_only_executor();
 
     const module_manager_hooks = new ModuleManagerHooks(this.contractId);
     const data = module_manager_hooks.pre_check(args.operation!);
@@ -128,8 +110,20 @@ export class Account {
       data = args.data!;
     }
 
-    const mod_manager = new ModuleManagerValidation(this.contractId);
-    mod_manager.install_module(args.contract_id!, data);
+    switch (args.module_type_id) {
+      case MODULE_VALIDATION_TYPE_ID:
+        const mod_manager_validation = new ModuleManagerValidation(this.contractId);
+        mod_manager_validation.install_module(args.contract_id!, data);
+        break;
+      case MODULE_EXECUTION_TYPE_ID:
+        const mod_manager_execution = new ModuleManagerExecution(this.contractId);
+        mod_manager_execution.install_module(args.contract_id!, data);
+        break;
+      case MODULE_HOOKS_TYPE_ID:
+        const module_manager_hooks = new ModuleManagerHooks(this.contractId);
+        module_manager_hooks.install_module(args.contract_id!, data);
+        break;
+    }
   }
   
   /**
@@ -147,8 +141,20 @@ export class Account {
       data = args.data!;
     }
 
-    const mod_manager = new ModuleManagerValidation(this.contractId);
-    mod_manager.uninstall_module(args.contract_id!, data);
+    switch (args.module_type_id) {
+      case MODULE_VALIDATION_TYPE_ID:
+        const mod_manager_validation = new ModuleManagerValidation(this.contractId);
+        mod_manager_validation.uninstall_module(args.contract_id!, data);
+        break;
+      case MODULE_EXECUTION_TYPE_ID:
+        const mod_manager_execution = new ModuleManagerExecution(this.contractId);
+        mod_manager_execution.uninstall_module(args.contract_id!, data);
+        break;
+      case MODULE_HOOKS_TYPE_ID:
+        const module_manager_hooks = new ModuleManagerHooks(this.contractId);
+        module_manager_hooks.uninstall_module(args.contract_id!, data);
+        break;
+    }
   }
 
   /**
@@ -322,7 +328,9 @@ export class Account {
    */
   _require_not_executor(): void {
     const caller = System.getCaller().caller;
-    System.require(this.mod_execution.has(caller) == false, "caller cannot be registered execution module");
+    const module_manager_execution = new ModuleManagerExecution(this.contractId);
+    const is_installed = module_manager_execution.is_module_installed(caller);
+    System.require(is_installed == false, "caller cannot be registered execution module");
   }
 
   /**
@@ -331,9 +339,11 @@ export class Account {
    * This method checks if the caller is a registered execution module. If not, it throws an error.
    * This is used to protect functions that should only be invoked by execution modules.
    */
-  _require_only_xecutor(): void {
+  _require_only_executor(): void {
     const caller = System.getCaller().caller;
-    System.require(this.mod_execution.has(caller) == true, "caller must be a module");
+    const module_manager_execution = new ModuleManagerExecution(this.contractId);
+    const is_installed = module_manager_execution.is_module_installed(caller);
+    System.require(is_installed == true, "caller must be a module");
   }
 
   /**

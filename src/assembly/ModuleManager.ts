@@ -59,8 +59,8 @@ export default class ModuleManager {
     ): void {
         const current_modules = this.storage.get(selector)!;
         const new_modules = new account.modules();
-        new_modules.value = ArrayBytes.remove(new_modules.value, contract_id);
-        this.storage.put(selector, current_modules);
+        new_modules.value = ArrayBytes.remove(current_modules.value, contract_id);
+        this.storage.put(selector, new_modules);
     }
 
     add_to_selector(
