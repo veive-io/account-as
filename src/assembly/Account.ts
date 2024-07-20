@@ -1,12 +1,10 @@
 import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
-import { modhooks, IModHooks, MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
-import { modexecution, IModExecution, MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
-import { modvalidation, IModValidation, MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
+import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
+import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
+import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
-import { 
-  MODULE_HOOKS_SPACE_ID, 
-  MODULE_EXECUTION_SPACE_ID,
+import {
   MODULE_SIGN_SPACE_ID
 } from "./Constants";
 import ModuleManagerValidation from "./ModuleManagerValidation";
