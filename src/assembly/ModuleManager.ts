@@ -127,22 +127,17 @@ export default class ModuleManager {
         return result;
     }
 
-    get_modules_by_operation_3(operation: account.operation): Uint8Array[] {
-        const level3_selector = new account.selector(operation.entry_point, operation.contract_id);
-        const level3_selector_bytes = selector_encode(level3_selector);
-        return this.get_modules_by_selector(level3_selector_bytes);
-    }
+    get_selector_by_operation(operation: account.operation, level: u32): Uint8Array {
+        let selector = this.default_selector;
 
-    get_modules_by_operation_2(operation: account.operation): Uint8Array[] {
-        const level2_selector = new account.selector(operation.entry_point);
-        const level2_selector_bytes = selector_encode(level2_selector);
-        return this.get_modules_by_selector(level2_selector_bytes);
-    }
+        if (level == 3) {
+            selector = new account.selector(operation.entry_point, operation.contract_id);
+        }
+        else if (level == 2) {
+            selector = new account.selector(operation.entry_point);
+        }
 
-    get_modules_by_operation_1(operation: account.operation): Uint8Array[] {
-        const level1_selector = this.default_selector;
-        const level1_selector_bytes = selector_encode(level1_selector);
-        return this.get_modules_by_selector(level1_selector_bytes);
+        return selector_encode(selector);
     }
 
     get_modules_by_operation(operation: account.operation): Uint8Array[] {

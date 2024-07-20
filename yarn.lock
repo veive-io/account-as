@@ -1764,10 +1764,10 @@
   resolved "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.2.0.tgz"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@veive/mod-execution-as@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@veive/mod-execution-as/-/mod-execution-as-1.0.6.tgz#01ec152f74dc68755a0198dce5cd5e0cd30a14d5"
-  integrity sha512-NsfqW6X0Dk1j0R53rstna0ph77af95mCFdzUJnzUwB7n7ooKOEmpQ8GbqrF3LvaRjIMbhXSY4o26rCBlI5FlMA==
+"@veive/mod-execution-as@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@veive/mod-execution-as/-/mod-execution-as-1.0.7.tgz#62b8b098409d5eb4320c95a49fbb13c0650bb3fd"
+  integrity sha512-uqeVYu4YpgujIAudBlcusvS9OgBxJtH9nkTdep68iDDtQN84sUSK3SiQlWsCUguU/aJnKpaqBjw8AmXXvJ7ORw==
   dependencies:
     "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
     "@koinosbox/contracts" "^2.1.4"
@@ -1775,10 +1775,10 @@
     koilib "^8.0.0"
     koinos-precompiler-as "^1.6.0"
 
-"@veive/mod-hooks-as@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@veive/mod-hooks-as/-/mod-hooks-as-1.0.7.tgz#2c6ac2b1d25d719c5e4da3ec98bff5205116cfd7"
-  integrity sha512-+2ODA83Ox6Mkr+sUBDBVWBly4QNbRMIm3oki6QTINZgTRqP33yraqRgp7SnVGbFdKRYZAlpC+QN+WB2G7XArWA==
+"@veive/mod-hooks-as@^1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@veive/mod-hooks-as/-/mod-hooks-as-1.0.8.tgz#6c0f64ef018fd709de5c4bd2b827476fc6551875"
+  integrity sha512-Qo2QiABctXE52hYKs4UyzlqR8NHD2h1CAyFAejunH0j4OiFEDHYta7iShuHbTb8qnT+oqe5bo7lVnfMKu271+Q==
   dependencies:
     "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
     "@koinosbox/contracts" "^2.1.4"

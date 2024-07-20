@@ -9,7 +9,9 @@ import {
   MODULE_EXECUTION_SPACE_ID,
   MODULE_SIGN_SPACE_ID
 } from "./Constants";
-import ValidationModuleManager from "./ValidationModuleManager";
+import ModuleManagerValidation from "./ModuleManagerValidation";
+import ModuleManagerHooks from "./ModuleManagerHooks";
+import ModuleManagerExecution from "./ModuleManagerExecution";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
@@ -57,9 +59,13 @@ export class Account {
     this._require_not_self();
     this._require_not_executor();
 
-    const data = this._pre_check(args.operation!);
-    this._execute(args.operation!);
-    this._post_check(data);
+    const module_manager_hooks = new ModuleManagerHooks(this.contractId);
+    const data = module_manager_hooks.pre_check(args.operation!);
+
+    const module_manager_execution = new ModuleManagerExecution(this.contractId);
+    module_manager_execution.execute(args.operation!);
+
+    module_manager_hooks.post_check(data);
   }
 
   /**
@@ -76,9 +82,13 @@ export class Account {
     this._require_not_self();
     this._require_only_xecutor();
 
-    const data = this._pre_check(args.operation!);
-    this._execute(args.operation!);
-    this._post_check(data);
+    const module_manager_hooks = new ModuleManagerHooks(this.contractId);
+    const data = module_manager_hooks.pre_check(args.operation!);
+
+    const module_manager_execution = new ModuleManagerExecution(this.contractId);
+    module_manager_execution.execute(args.operation!);
+
+    module_manager_hooks.post_check(data);
   }
 
   /**
@@ -118,7 +128,7 @@ export class Account {
       data = args.data!;
     }
 
-    const mod_manager = new ValidationModuleManager(this.contractId);
+    const mod_manager = new ModuleManagerValidation(this.contractId);
     mod_manager.install_module(args.contract_id!, data);
   }
   
@@ -137,7 +147,7 @@ export class Account {
       data = args.data!;
     }
 
-    const mod_manager = new ValidationModuleManager(this.contractId);
+    const mod_manager = new ModuleManagerValidation(this.contractId);
     mod_manager.uninstall_module(args.contract_id!, data);
   }
 
@@ -150,10 +160,23 @@ export class Account {
    * @readonly
    */
   is_module_installed(args: account.is_module_installed_args): account.is_module_installed_result {
-    const result = new account.is_module_installed_result(true);
+    const result = new account.is_module_installed_result(false);
 
-    const mod_manager = new ValidationModuleManager(this.contractId);
-    result.value = mod_manager.is_module_installed(args.contract_id!);
+    switch (args.module_type_id) {
+      case MODULE_VALIDATION_TYPE_ID:
+        const mod_manager_validation = new ModuleManagerValidation(this.contractId);
+        result.value = mod_manager_validation.is_module_installed(args.contract_id!); 
+        break;
+      case MODULE_EXECUTION_TYPE_ID:
+        const mod_manager_execution = new ModuleManagerExecution(this.contractId);
+        result.value = mod_manager_execution.is_module_installed(args.contract_id!); 
+        break;
+      case MODULE_HOOKS_TYPE_ID:
+        const module_manager_hooks = new ModuleManagerHooks(this.contractId);
+        result.value = module_manager_hooks.is_module_installed(args.contract_id!); 
+        break;
+    }
+
     return result;
   }
 
@@ -186,7 +209,7 @@ export class Account {
   get_modules(): account.get_modules_result {
     const result = new account.get_modules_result([]);
 
-    const mod_manager = new ValidationModuleManager(this.contractId);
+    const mod_manager = new ModuleManagerValidation(this.contractId);
     result.value = mod_manager.get_modules();
 
     return result;
@@ -216,7 +239,8 @@ export class Account {
    */
   is_valid_operation(args: account.is_valid_operation_args): account.is_valid_operation_result {
     const result = new account.is_valid_operation_result();
-    result.value = this._validate_op(args.operation!);
+    const module_manager = new ModuleManagerValidation(this.contractId);
+    result.value = module_manager.validate_operation(args.operation!);
     return result;
   }
 
@@ -327,7 +351,8 @@ export class Account {
    * Ensures that the operation is valid
    */
   _require_valid_operation(operation: account.operation): void {
-    System.require( this._validate_op(operation) == true, 'operation is not valid');
+    const module_manager = new ModuleManagerValidation(this.contractId);
+    System.require( module_manager.validate_operation(operation) == true, 'operation is not valid');
   }
 
   /**
@@ -367,150 +392,6 @@ export class Account {
     }
 
     return false;
-  }
-
-  /**
-   * Validates the operation using all registered validator modules.
-   * 
-   * @param operation The operation to validate.
-   * @returns `true` if there is a validator that validates the operation successfully, otherwise `false`.
-   */
-  _validate_op(operation: account.operation): boolean {
-    const mod_manager = new ValidationModuleManager(this.contractId);
-
-    const validators = mod_manager.get_modules_by_operation(operation);
-
-    if (validators.length > 0) {
-      const validator = validators[0];
-      const caller = System.getCaller().caller;
-
-      const op = new modvalidation.operation();
-      op.contract_id = operation.contract_id;
-      op.entry_point = operation.entry_point;
-      op.args = operation.args;
-  
-      const args = new modvalidation.is_valid_operation_args(op);
-      if (caller && caller.length > 0 && Arrays.equal(caller, validator)) {
-        return true;
-      }
-
-      const module = new IModValidation(validator);
-      const res = module.is_valid_operation(args);
-
-      if (res.value == true) {
-        return true;
-      }
-
-    // the first time you don't have validators and you need to install the first module
-    } else {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Performs pre-checks using all registered hook modules.
-   * 
-   * @param operation The operation to be pre-checked.
-   * @returns An array of pre-check data returned by each hook module.
-   */
-  _pre_check(operation: account.operation): Uint8Array[] {
-    const hooks = this.mod_hooks.getManyKeys(new Uint8Array(0));
-    const data: Uint8Array[] = [];
-    
-    if (hooks && hooks.length > 0) {
-      const caller = System.getCaller().caller;
-
-      for (let i = 0; i < hooks.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, hooks[i])) {
-          continue;
-        }
-  
-        const hookModule = this.mod_hooks.get(hooks[i]);
-        if (hookModule) {
-          const args = new modhooks.pre_check_args();
-          const op = new modhooks.operation();
-          op.contract_id = operation.contract_id;
-          op.entry_point = operation.entry_point;
-          op.args = operation.args;
-
-          args.operation = op;
-          args.sender = caller;
-  
-          const module = new IModHooks(hooks[i]);
-          const res = module.pre_check(args);
-  
-          if (res && res.value && res.value!.length > 0) {
-            data.push(res.value!);
-          } else {
-            data.push(new Uint8Array(0));
-          }
-        }
-      }
-    }
-
-    return data;
-  }
-
-  /**
-   * Performs post-checks using all registered hook modules.
-   * 
-   * @param preCheckData The array of pre-check data returned by each hook module during the pre-check phase.
-   */
-  _post_check(preCheckData: Uint8Array[]): void {
-    const hooks = this.mod_hooks.getManyKeys(new Uint8Array(0));
-
-    if (hooks && hooks.length > 0) {
-      const caller = System.getCaller().caller;
-    
-      for (let i = 0; i < hooks.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, hooks[i])) {
-          continue;
-        }
-  
-        const hookModule = this.mod_hooks.get(hooks[i]);
-        if (hookModule) {
-          const args = new modhooks.post_check_args();
-          args.data = preCheckData[i];
-  
-          const module = new IModHooks(hooks[i]);
-          module.post_check(args);
-        }
-      }
-    }
-  }
-
-  /**
-   * Executes the given operation using all registered executor modules.
-   * 
-   * @param operation The operation to be executed.
-   */
-  _execute(operation: account.operation): void {
-    const executors = this.mod_execution.getManyKeys(new Uint8Array(0));
-
-    if (executors && executors.length > 0) {
-      const caller = System.getCaller().caller;
-    
-      for (let i = 0; i < executors.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, executors[i])) {
-          continue;
-        }
-  
-        const executeModule = this.mod_execution.get(executors[i]);
-        if (executeModule) {
-          const args = new modexecution.execute_args();
-          const op = new modexecution.operation();
-          op.contract_id = operation.contract_id;
-          op.entry_point = operation.entry_point;
-          op.args = operation.args;
-          args.operation = op;
-  
-          const module = new IModExecution(executors[i]);
-          module.execute(args);
-        }
-      }
-    }
   }
 
 }
