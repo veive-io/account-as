@@ -91,39 +91,30 @@ it("install module error: caller must be itself", async () => {
 });
 */
 
+/**
+ *     
+
+ */
+
 it("check module type is supported", async () => {
-    const bytes1 = await modContract.serializer.serialize({
-        entry_point: 10
-    }, "selector");
-
-    const bytes2 = await modContract.serializer.serialize({
-        entry_point: 20
-    }, "selector");
-
-    const { operation } = await accountContract["my_method"]({
-        selectors: [
-            utils.encodeBase64url(bytes1), 
-            utils.encodeBase64url(bytes2)
-        ]
-    }, { onlyOperation: true });
-
-    const tx = new Transaction({
-        signer: accountSign,
-        provider
+    const { result } = await accountContract["is_module_type_supported"]({
+        module_type_id: 1
     });
 
-    await tx.pushOperation(operation);
-    const receipt = await tx.send();
-    await tx.wait();
-
-    console.log(receipt);
+    expect(result.value).toStrictEqual(true);
 })
 
-/*
 it("install module", async () => {
+    const scope = await modContract.serializer.serialize({
+        entry_point: 1
+    }, "selector");
+
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 1,
-        contract_id: modSign.address
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -142,8 +133,6 @@ it("install module", async () => {
     await tx.pushOperation(exec);
     const receipt = await tx.send();
     await tx.wait();
-
-    console.log(receipt);
 
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-validation] called module install");
@@ -176,9 +165,12 @@ it("trigger module is_valid_operation", async () => {
     await tx.pushOperation(exec);
     const receipt = await tx.send();
     await tx.wait();
+
+    console.log(receipt);
     
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-validation] is_valid_operation called");
+    expect(receipt.logs).toContain(`[account] selected validation ${modSign.address}`);
 });
 
 it("uninstall module", async () => {
@@ -215,4 +207,4 @@ it("uninstall module", async () => {
         contract_id: modSign.address
     });
     expect(r2).toBeUndefined();
-});*/
+});

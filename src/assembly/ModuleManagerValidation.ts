@@ -1,5 +1,5 @@
 import { account } from "./proto/account";
-import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
+import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive/mod-validation-as";
@@ -37,13 +37,12 @@ export default class ModuleManagerValidation implements IModuleManager {
         const manifest = module_interface.manifest();
 
         System.require(manifest.type_id == MODULE_VALIDATION_TYPE_ID, "[account] wrong module_type_id");
+        System.require(scopes.length > 0, "[account] missing scopes");
 
-        if (scopes.length > 0) {
-            for (let i = 0; i < manifest.selectors.length; i++) {
-                const scope = scopes[i];
-                const module = new account.module_validation(contract_id);
-                this.storage.put(scope, module);
-            }
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const module = new account.module_validation(contract_id);
+            this.storage.put(scope, module);
         }
 
         module_interface.on_install(new modvalidation.on_install_args(data));
@@ -73,7 +72,7 @@ export default class ModuleManagerValidation implements IModuleManager {
 
         if (modules && modules.length > 0) {
             for (let j = 0; j < modules.length; j++) {
-                const module = modules[j].value;
+                const module = modules[j].value!;
                 if (ArrayBytes.includes(result, module) == false) {
                     result.push(module);
                 }
@@ -120,19 +119,19 @@ export default class ModuleManagerValidation implements IModuleManager {
     _get_module_by_operation(operation: account.operation): Uint8Array|null {
         const level3_selector = this._get_selector_by_operation_level(operation, 3);
         const level3_module = this.storage.get(level3_selector);
-        if (level3_module) {
+        if (level3_module && level3_module.value) {
             return level3_module.value;
         }
 
         const level2_selector = this._get_selector_by_operation_level(operation, 2);
         const level2_module = this.storage.get(level2_selector);
-        if (level2_module) {
+        if (level2_module && level2_module.value) {
             return level2_module.value;
         }
 
         const level1_selector = this._get_selector_by_operation_level(operation, 1);
         const level1_module = this.storage.get(level1_selector);
-        if (level1_module) {
+        if (level1_module && level1_module.value) {
             return level1_module.value;
         }
 
@@ -140,10 +139,9 @@ export default class ModuleManagerValidation implements IModuleManager {
     }
 
     validate_operation(operation: account.operation): boolean {
-        const validator = this._get_module_by_operation(operation);
-
-        if (validator != null) {
-            const caller = System.getCaller().caller;
+        const module = this._get_module_by_operation(operation);
+        if (module != null) {
+            System.log(`[account] selected validation ${Base58.encode(module)}`);
 
             const op = new modvalidation.operation();
             op.contract_id = operation.contract_id;
@@ -151,20 +149,18 @@ export default class ModuleManagerValidation implements IModuleManager {
             op.args = operation.args;
 
             const args = new modvalidation.is_valid_operation_args(op);
-            if (caller && caller.length > 0 && Arrays.equal(caller, validator)) {
-                return true;
-            }
+            const module_interface = new IModValidation(module);
+            const res = module_interface.is_valid_operation(args);
+            return res.value;
 
-            const module = new IModValidation(validator);
-            const res = module.is_valid_operation(args);
-
-            if (res.value == true) {
-                return true;
-            }
-
-            // the first time you don't have validators and you need to install the first module
         } else {
-            return true;
+
+            // in new account you don't have validation and you need to install the first without any check
+            const modules = this.get_modules();
+            if (modules.length == 0) {
+                return true;
+            }
+
         }
 
         return false;

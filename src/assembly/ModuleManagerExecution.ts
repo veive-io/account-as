@@ -38,16 +38,15 @@ export default class ModuleManagerExecution implements IModuleManager {
         const manifest = module_interface.manifest();
 
         System.require(manifest.type_id == MODULE_EXECUTION_TYPE_ID, "[account] wrong module_type_id");
-
-        if (scopes.length > 0) {
-            for (let i = 0; i < manifest.selectors.length; i++) {
-                const scope = scopes[i];
-                const modules = this.storage.get(scope)! || new account.modules();
-                if (ArrayBytes.includes(modules.value, contract_id) == false) {
-                    modules.value.push(contract_id);
-                }
-                this.storage.put(scope, modules);
+        System.require(scopes.length > 0, "[account] missing scopes");
+       
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const modules = this.storage.get(scope)! || new account.modules();
+            if (ArrayBytes.includes(modules.value, contract_id) == false) {
+                modules.value.push(contract_id);
             }
+            this.storage.put(scope, modules);
         }
 
         module_interface.on_install(new modexecution.on_install_args(data));

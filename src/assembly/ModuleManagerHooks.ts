@@ -38,16 +38,15 @@ export default class ModuleManagerHooks implements IModuleManager {
         const manifest = module_interface.manifest();
 
         System.require(manifest.type_id == MODULE_HOOKS_TYPE_ID, "[account] wrong module_type_id");
+        System.require(scopes.length > 0, "[account] missing scopes");
 
-        if (scopes.length > 0) {
-            for (let i = 0; i < manifest.selectors.length; i++) {
-                const scope = scopes[i];
-                const modules = this.storage.get(scope)! || new account.modules();
-                if (ArrayBytes.includes(modules.value, contract_id) == false) {
-                    modules.value.push(contract_id);
-                }
-                this.storage.put(scope, modules);
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const modules = this.storage.get(scope)! || new account.modules();
+            if (ArrayBytes.includes(modules.value, contract_id) == false) {
+                modules.value.push(contract_id);
             }
+            this.storage.put(scope, modules);
         }
 
         module_interface.on_install(new modhooks.on_install_args(data));
