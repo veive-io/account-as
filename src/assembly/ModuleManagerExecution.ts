@@ -25,8 +25,8 @@ export default class ModuleManagerExecution implements IModuleManager {
         );
     }
 
-    get default_selector(): modexecution.selector {
-        return new modexecution.selector(1);
+    get default_scope(): modexecution.scope {
+        return new modexecution.scope(1);
     }
 
     install_module(
@@ -61,13 +61,13 @@ export default class ModuleManagerExecution implements IModuleManager {
         const module = module_interface.manifest();
         System.require(module.type_id == MODULE_EXECUTION_TYPE_ID, "[account] wrong module_type_id");
 
-        const selectors = this._get_selectors_by_module(contract_id);
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            const current_modules = this.storage.get(selector)!;
+        const scopes = this._get_scopes_by_module(contract_id);
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const current_modules = this.storage.get(scope)!;
             const new_modules = new account.modules();
             new_modules.value = ArrayBytes.remove(current_modules.value, contract_id);
-            this.storage.put(selector, new_modules);
+            this.storage.put(scope, new_modules);
         }
 
         module_interface.on_uninstall(new modexecution.on_uninstall_args(data));
@@ -75,11 +75,11 @@ export default class ModuleManagerExecution implements IModuleManager {
 
     get_modules(): Uint8Array[] {
         const result: Uint8Array[] = [];
-        const selectors = this.storage.getManyKeys(new Uint8Array(0));
+        const scopes = this.storage.getManyKeys(new Uint8Array(0));
 
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            const modules = this.storage.get(selector);
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const modules = this.storage.get(scope);
 
             if (modules && modules.value && modules.value.length > 0) {
                 for (let j = 0; j < modules.value.length; j++) {
@@ -95,8 +95,8 @@ export default class ModuleManagerExecution implements IModuleManager {
     }
 
     is_module_installed(contract_id: Uint8Array): boolean {
-        const selectors = this._get_selectors_by_module(contract_id);
-        return selectors.length > 0;
+        const scopes = this._get_scopes_by_module(contract_id);
+        return scopes.length > 0;
     }
 
     /**
@@ -128,56 +128,56 @@ export default class ModuleManagerExecution implements IModuleManager {
         }
     }
 
-    _get_selectors_by_module(contract_id: Uint8Array): Uint8Array[] {
+    _get_scopes_by_module(contract_id: Uint8Array): Uint8Array[] {
         const result: Uint8Array[] = [];
 
-        const selectors = this.storage.getManyKeys(new Uint8Array(0));
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            const modules = this.storage.get(selector);
+        const scopes = this.storage.getManyKeys(new Uint8Array(0));
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const modules = this.storage.get(scope);
 
             if (modules && modules.value && ArrayBytes.includes(modules.value, contract_id) == true) {
-                result.push(selector);
+                result.push(scope);
             }
         }
 
         return result;
     }
 
-    _get_selector_by_operation_level(operation: account.operation, level: u32): Uint8Array {
-        let selector = this.default_selector;
+    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
+        let scope = this.default_scope;
 
         if (level == 3) {
-            selector = new modexecution.selector(operation.entry_point, operation.contract_id);
+            scope = new modexecution.scope(operation.entry_point, operation.contract_id);
         }
         else if (level == 2) {
-            selector = new modexecution.selector(operation.entry_point);
+            scope = new modexecution.scope(operation.entry_point);
         }
 
-        return Protobuf.encode<modexecution.selector>(selector, modexecution.selector.encode);
+        return Protobuf.encode<modexecution.scope>(scope, modexecution.scope.encode);
     }
 
     _get_modules_by_operation(operation: account.operation): Uint8Array[] {
         const result: Uint8Array[] = [];
 
-        const level3_selector = this._get_selector_by_operation_level(operation, 3);
-        const level3_modules = this.storage.get(level3_selector);
+        const level3_scope = this._get_scope_by_operation_level(operation, 3);
+        const level3_modules = this.storage.get(level3_scope);
         if (level3_modules) {
             for (let i = 0; i < level3_modules.value.length; i++) {
                 result.push(level3_modules.value[i]);
             }
         }
 
-        const level2_selector = this._get_selector_by_operation_level(operation, 2);
-        const level2_modules = this.storage.get(level2_selector);
+        const level2_scope = this._get_scope_by_operation_level(operation, 2);
+        const level2_modules = this.storage.get(level2_scope);
         if (level2_modules) {
             for (let j = 0; j < level2_modules.value.length; j++) {
                 result.push(level2_modules.value[j]);
             }
         }
 
-        const level1_selector = this._get_selector_by_operation_level(operation, 1);
-        const level1_modules = this.storage.get(level1_selector);
+        const level1_scope = this._get_scope_by_operation_level(operation, 1);
+        const level1_modules = this.storage.get(level1_scope);
         if (level1_modules) {
             for (let k = 0; k < level1_modules.value.length; k++) {
                 result.push(level1_modules.value[k]);

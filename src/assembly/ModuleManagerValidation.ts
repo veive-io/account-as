@@ -24,8 +24,8 @@ export default class ModuleManagerValidation implements IModuleManager {
         );
     }
 
-    get default_selector(): modvalidation.selector {
-        return new modvalidation.selector(1);
+    get default_scope(): modvalidation.scope {
+        return new modvalidation.scope(1);
     }
 
     install_module(
@@ -57,10 +57,10 @@ export default class ModuleManagerValidation implements IModuleManager {
         const module = module_interface.manifest();
         System.require(module.type_id == MODULE_VALIDATION_TYPE_ID, "[account] wrong module_type_id");
 
-        const selectors = this._get_selectors_by_module(contract_id);
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            this.storage.remove(selector);
+        const scopes = this._get_scopes_by_module(contract_id);
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            this.storage.remove(scope);
         }
 
         module_interface.on_uninstall(new modvalidation.on_uninstall_args(data));
@@ -83,54 +83,54 @@ export default class ModuleManagerValidation implements IModuleManager {
     }
 
     is_module_installed(contract_id: Uint8Array): boolean {
-        const selectors = this._get_selectors_by_module(contract_id);
-        return selectors.length > 0;
+        const scopes = this._get_scopes_by_module(contract_id);
+        return scopes.length > 0;
     }
 
-    _get_selectors_by_module(contract_id: Uint8Array): Uint8Array[] {
+    _get_scopes_by_module(contract_id: Uint8Array): Uint8Array[] {
         const result: Uint8Array[] = [];
 
-        const selectors = this.storage.getManyKeys(new Uint8Array(0));
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            const module = this.storage.get(selector);
+        const scopes = this.storage.getManyKeys(new Uint8Array(0));
+        for (let i = 0; i < scopes.length; i++) {
+            const scope = scopes[i];
+            const module = this.storage.get(scope);
 
             if (module && module.value && Arrays.equal(module.value, contract_id) == true) {
-                result.push(selector);
+                result.push(scope);
             }
         }
 
         return result;
     }
 
-    _get_selector_by_operation_level(operation: account.operation, level: u32): Uint8Array {
-        let selector = this.default_selector;
+    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
+        let scope = this.default_scope;
 
         if (level == 3) {
-            selector = new modvalidation.selector(operation.entry_point, operation.contract_id);
+            scope = new modvalidation.scope(operation.entry_point, operation.contract_id);
         }
         else if (level == 2) {
-            selector = new modvalidation.selector(operation.entry_point);
+            scope = new modvalidation.scope(operation.entry_point);
         }
 
-        return Protobuf.encode<modvalidation.selector>(selector, modvalidation.selector.encode);
+        return Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
     }
 
     _get_module_by_operation(operation: account.operation): Uint8Array|null {
-        const level3_selector = this._get_selector_by_operation_level(operation, 3);
-        const level3_module = this.storage.get(level3_selector);
+        const level3_scope = this._get_scope_by_operation_level(operation, 3);
+        const level3_module = this.storage.get(level3_scope);
         if (level3_module && level3_module.value) {
             return level3_module.value;
         }
 
-        const level2_selector = this._get_selector_by_operation_level(operation, 2);
-        const level2_module = this.storage.get(level2_selector);
+        const level2_scope = this._get_scope_by_operation_level(operation, 2);
+        const level2_module = this.storage.get(level2_scope);
         if (level2_module && level2_module.value) {
             return level2_module.value;
         }
 
-        const level1_selector = this._get_selector_by_operation_level(operation, 1);
-        const level1_module = this.storage.get(level1_selector);
+        const level1_scope = this._get_scope_by_operation_level(operation, 1);
+        const level1_module = this.storage.get(level1_scope);
         if (level1_module && level1_module.value) {
             return level1_module.value;
         }

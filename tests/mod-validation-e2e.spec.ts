@@ -107,7 +107,7 @@ it("check module type is supported", async () => {
 it("install module", async () => {
     const scope = await modContract.serializer.serialize({
         entry_point: 1
-    }, "selector");
+    }, "scope");
 
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 1,
