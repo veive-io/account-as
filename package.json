@@ -34,7 +34,6 @@
     "@veive/mod-hooks-as": "^1.0.9",
     "@veive/mod-sign-as": "^1.0.3",
     "@veive/mod-validation-as": "^1.0.17",
-    "@veive/mod-as": "1.0.19",
     "koilib": "^8.0.0",
     "koinos-precompiler-as": "^1.6.0"
   },

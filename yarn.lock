@@ -1764,17 +1764,6 @@
   resolved "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.2.0.tgz"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@veive/mod-as@1.0.19":
-  version "1.0.19"
-  resolved "https://registry.yarnpkg.com/@veive/mod-as/-/mod-as-1.0.19.tgz#9561b374ff75c6183eba234ef447b0d879831d59"
-  integrity sha512-hZjQISsgX3FDcdEWWOcTB3TeggC7Bj6lHBtyUulqorHbuPC8gQ/qIsOQD45m0mfw9IbpxvdiF+FRvetLqab2Ug==
-  dependencies:
-    "@koinos/sdk-as" "npm:@koinosbox/sdk-as@1.1.0-alpha.4"
-    "@koinosbox/contracts" "^2.1.4"
-    "@koinosbox/hdkoinos" "1.0.1"
-    koilib "^8.0.0"
-    koinos-precompiler-as "^1.6.0"
-
 "@veive/mod-execution-as@^1.0.8":
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/@veive/mod-execution-as/-/mod-execution-as-1.0.8.tgz#86af3432f3e7f1cb47a98569848ea69d1d69aff6"
