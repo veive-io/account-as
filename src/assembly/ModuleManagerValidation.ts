@@ -4,6 +4,8 @@ import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive/mod-validation-as";
 
+const SPACE_ID = 1;
+
 export default class ModuleManagerValidation implements IModuleManager {
 
     contract_id: Uint8Array;
@@ -17,7 +19,7 @@ export default class ModuleManagerValidation implements IModuleManager {
     get storage(): Storage.Map<Uint8Array, account.module_validation> {
         return new Storage.Map(
             this.contract_id,
-            MODULE_VALIDATION_TYPE_ID,
+            SPACE_ID,
             account.module_validation.decode,
             account.module_validation.encode,
             () => new account.module_validation()

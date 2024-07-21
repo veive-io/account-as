@@ -1,15 +1,14 @@
-import { System, Storage, authority, Arrays, Protobuf } from "@koinos/sdk-as";
+import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
-import {
-  MODULE_SIGN_SPACE_ID
-} from "./Constants";
 import ModuleManagerValidation from "./ModuleManagerValidation";
 import ModuleManagerHooks from "./ModuleManagerHooks";
 import ModuleManagerExecution from "./ModuleManagerExecution";
+
+const MODULE_SIGN_SPACE_ID = 3;
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;

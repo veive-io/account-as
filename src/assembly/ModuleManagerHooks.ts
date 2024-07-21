@@ -1,9 +1,10 @@
 import { account } from "./proto/account";
 import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
-import { MODULE_HOOKS_SPACE_ID } from "./Constants";
 import IModuleManager from "./IModuleManager";
 import { IModHooks, MODULE_HOOKS_TYPE_ID, modhooks } from "@veive/mod-hooks-as";
+
+const SPACE_ID = 4;
 
 export default class ModuleManagerHooks implements IModuleManager {
 
@@ -18,7 +19,7 @@ export default class ModuleManagerHooks implements IModuleManager {
     get storage(): Storage.Map<Uint8Array, account.modules_hooks> {
         return new Storage.Map(
             this.contract_id,
-            MODULE_HOOKS_SPACE_ID,
+            SPACE_ID,
             account.modules_hooks.decode,
             account.modules_hooks.encode,
             () => new account.modules_hooks()

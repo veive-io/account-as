@@ -2,8 +2,9 @@ import { account } from "./proto/account";
 import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
 import { IModExecution, MODULE_EXECUTION_TYPE_ID, modexecution } from "@veive/mod-execution-as";
 import { ArrayBytes } from "./utils";
-import { MODULE_EXECUTION_SPACE_ID } from "./Constants";
 import IModuleManager from "./IModuleManager";
+
+const SPACE_ID = 2;
 
 export default class ModuleManagerExecution implements IModuleManager {
 
@@ -18,7 +19,7 @@ export default class ModuleManagerExecution implements IModuleManager {
     get storage(): Storage.Map<Uint8Array, account.modules_execution> {
         return new Storage.Map(
             this.contract_id,
-            MODULE_EXECUTION_SPACE_ID,
+            SPACE_ID,
             account.modules_execution.decode,
             account.modules_execution.encode,
             () => new account.modules_execution()
