@@ -92,6 +92,14 @@ message module_validation {
     bytes value = 1 [(koinos.btype) = ADDRESS];
 }
 
-message modules {
+message modules_hooks {
+    repeated bytes value = 1 [(koinos.btype) = ADDRESS];
+}
+
+message modules_execution {
+    repeated bytes value = 1 [(koinos.btype) = ADDRESS];
+}
+
+message modules_sign {
     repeated bytes value = 1 [(koinos.btype) = ADDRESS];
 }

@@ -15,13 +15,13 @@ export default class ModuleManagerExecution implements IModuleManager {
         this.contract_id = contract_id;
     }
 
-    get storage(): Storage.Map<Uint8Array, account.modules> {
+    get storage(): Storage.Map<Uint8Array, account.modules_execution> {
         return new Storage.Map(
             this.contract_id,
             MODULE_EXECUTION_SPACE_ID,
-            account.modules.decode,
-            account.modules.encode,
-            () => new account.modules()
+            account.modules_execution.decode,
+            account.modules_execution.encode,
+            () => new account.modules_execution()
         );
     }
 
@@ -42,7 +42,7 @@ export default class ModuleManagerExecution implements IModuleManager {
        
         for (let i = 0; i < scopes.length; i++) {
             const scope = scopes[i];
-            const modules = this.storage.get(scope)! || new account.modules();
+            const modules = this.storage.get(scope)! || new account.modules_execution();
             if (ArrayBytes.includes(modules.value, contract_id) == false) {
                 modules.value.push(contract_id);
             }
@@ -65,7 +65,7 @@ export default class ModuleManagerExecution implements IModuleManager {
         for (let i = 0; i < scopes.length; i++) {
             const scope = scopes[i];
             const current_modules = this.storage.get(scope)!;
-            const new_modules = new account.modules();
+            const new_modules = new account.modules_execution();
             new_modules.value = ArrayBytes.remove(current_modules.value, contract_id);
             this.storage.put(scope, new_modules);
         }

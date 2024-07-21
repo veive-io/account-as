@@ -853,8 +853,8 @@ export namespace account {
     }
   }
 
-  export class modules {
-    static encode(message: modules, writer: Writer): void {
+  export class modules_hooks {
+    static encode(message: modules_hooks, writer: Writer): void {
       const unique_name_value = message.value;
       if (unique_name_value.length !== 0) {
         for (let i = 0; i < unique_name_value.length; ++i) {
@@ -864,9 +864,85 @@ export namespace account {
       }
     }
 
-    static decode(reader: Reader, length: i32): modules {
+    static decode(reader: Reader, length: i32): modules_hooks {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new modules();
+      const message = new modules_hooks();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.value.push(reader.bytes());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    value: Array<Uint8Array>;
+
+    constructor(value: Array<Uint8Array> = []) {
+      this.value = value;
+    }
+  }
+
+  export class modules_execution {
+    static encode(message: modules_execution, writer: Writer): void {
+      const unique_name_value = message.value;
+      if (unique_name_value.length !== 0) {
+        for (let i = 0; i < unique_name_value.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_value[i]);
+        }
+      }
+    }
+
+    static decode(reader: Reader, length: i32): modules_execution {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new modules_execution();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.value.push(reader.bytes());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    value: Array<Uint8Array>;
+
+    constructor(value: Array<Uint8Array> = []) {
+      this.value = value;
+    }
+  }
+
+  export class modules_sign {
+    static encode(message: modules_sign, writer: Writer): void {
+      const unique_name_value = message.value;
+      if (unique_name_value.length !== 0) {
+        for (let i = 0; i < unique_name_value.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_value[i]);
+        }
+      }
+    }
+
+    static decode(reader: Reader, length: i32): modules_sign {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new modules_sign();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
