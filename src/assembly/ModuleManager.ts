@@ -35,20 +35,18 @@ export default class ModuleManager {
 
     install_module(
         contract_id: Uint8Array,
-        data: Uint8Array
+        scopes: Uint8Array[],
+        data: Uint8Array,
     ): void {
         const module_interface = new IMod(contract_id);
         const manifest = module_interface.manifest();
 
         System.require(manifest.type_id == this.module_type_id, "[account] wrong module_type_id");
-        System.require(manifest.selectors.length > 0, "[account] missing selectors");
 
-        if (manifest.selectors && manifest.selectors.length > 0) {
+        if (scopes.length > 0) {
             for (let i = 0; i < manifest.selectors.length; i++) {
-                const manifest_selector = manifest.selectors[i];
-                const selector = new account.selector(manifest_selector.entry_point, manifest_selector.contract_id);
-                const selector_bytes = selector_encode(selector);
-                this.add_to_selector(selector_bytes, contract_id);
+                const scope = scopes[i];
+                this.add_to_selector(scope, contract_id);
             }
         }
 
@@ -113,22 +111,6 @@ export default class ModuleManager {
             modules.value.push(contract_id);
         }
         this.storage.put(selector, modules);
-    }
-
-    set_selectors(
-        selectors: Uint8Array[], 
-        contract_id: Uint8Array
-    ): void {
-        const current_selectors = this.get_selectors_by_module(contract_id);
-        for (let i = 0; i < current_selectors.length; i++) {
-            const current_selector = current_selectors[i];
-            this.remove_from_selector(current_selector, contract_id);
-        }
-
-        for (let j = 0; j < selectors.length; j++) {
-            const new_selector = selectors[j];
-            this.add_to_selector(new_selector, contract_id);
-        }
     }
 
     get_selectors_by_module(contract_id: Uint8Array): Uint8Array[] {

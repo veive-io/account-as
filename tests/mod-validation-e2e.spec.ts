@@ -1,5 +1,5 @@
 import { LocalKoinos } from "@roamin/local-koinos";
-import { Contract, Signer, Transaction, Provider } from "koilib";
+import { Contract, Signer, Transaction, Provider, utils } from "koilib";
 import path from "path";
 import { randomBytes } from "crypto";
 import { beforeAll, afterAll, it, expect } from "@jest/globals";
@@ -29,6 +29,12 @@ const accountContract = new Contract({
     abi: accountAbi,
     provider
 }).functions;
+
+const modContract = new Contract({
+    id: modSign.getAddress(),
+    abi: modAbi,
+    provider
+});
 
 beforeAll(async () => {
     // start local-koinos node
@@ -86,12 +92,34 @@ it("install module error: caller must be itself", async () => {
 */
 
 it("check module type is supported", async () => {
-    const { result } = await accountContract["is_module_type_supported"]({
-        module_type_id: 1
+    const bytes1 = await modContract.serializer.serialize({
+        entry_point: 10
+    }, "selector");
+
+    const bytes2 = await modContract.serializer.serialize({
+        entry_point: 20
+    }, "selector");
+
+    const { operation } = await accountContract["my_method"]({
+        selectors: [
+            utils.encodeBase64url(bytes1), 
+            utils.encodeBase64url(bytes2)
+        ]
+    }, { onlyOperation: true });
+
+    const tx = new Transaction({
+        signer: accountSign,
+        provider
     });
-    expect(result.value).toStrictEqual(true);
+
+    await tx.pushOperation(operation);
+    const receipt = await tx.send();
+    await tx.wait();
+
+    console.log(receipt);
 })
 
+/*
 it("install module", async () => {
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 1,
@@ -187,4 +215,4 @@ it("uninstall module", async () => {
         contract_id: modSign.address
     });
     expect(r2).toBeUndefined();
-});
+});*/

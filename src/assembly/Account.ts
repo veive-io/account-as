@@ -1,4 +1,4 @@
-import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
+import { System, Storage, authority, Arrays, Protobuf } from "@koinos/sdk-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
@@ -111,15 +111,15 @@ export class Account {
     switch (args.module_type_id) {
       case MODULE_VALIDATION_TYPE_ID:
         const mod_manager_validation = new ModuleManagerValidation(this.contractId);
-        mod_manager_validation.install_module(args.contract_id!, data);
+        mod_manager_validation.install_module(args.contract_id!, args.scopes, data);
         break;
       case MODULE_EXECUTION_TYPE_ID:
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
-        mod_manager_execution.install_module(args.contract_id!, data);
+        mod_manager_execution.install_module(args.contract_id!, args.scopes, data);
         break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
-        module_manager_hooks.install_module(args.contract_id!, data);
+        module_manager_hooks.install_module(args.contract_id!, args.scopes, data);
         break;
     }
   }
@@ -401,5 +401,4 @@ export class Account {
 
     return false;
   }
-
 }

@@ -214,9 +214,17 @@ export namespace account {
         writer.bytes(unique_name_contract_id);
       }
 
+      const unique_name_scopes = message.scopes;
+      if (unique_name_scopes.length !== 0) {
+        for (let i = 0; i < unique_name_scopes.length; ++i) {
+          writer.uint32(26);
+          writer.bytes(unique_name_scopes[i]);
+        }
+      }
+
       const unique_name_data = message.data;
       if (unique_name_data !== null) {
-        writer.uint32(26);
+        writer.uint32(34);
         writer.bytes(unique_name_data);
       }
     }
@@ -237,6 +245,10 @@ export namespace account {
             break;
 
           case 3:
+            message.scopes.push(reader.bytes());
+            break;
+
+          case 4:
             message.data = reader.bytes();
             break;
 
@@ -251,15 +263,18 @@ export namespace account {
 
     module_type_id: u32;
     contract_id: Uint8Array | null;
+    scopes: Array<Uint8Array>;
     data: Uint8Array | null;
 
     constructor(
       module_type_id: u32 = 0,
       contract_id: Uint8Array | null = null,
+      scopes: Array<Uint8Array> = [],
       data: Uint8Array | null = null
     ) {
       this.module_type_id = module_type_id;
       this.contract_id = contract_id;
+      this.scopes = scopes;
       this.data = data;
     }
   }
