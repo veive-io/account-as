@@ -2,10 +2,9 @@ import { account } from "./proto/account";
 import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
-import { IModHooks, MODULE_HOOKS_TYPE_ID, modhooks } from "@veive/mod-hooks-as";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive/mod-validation-as";
 
-export default class ModuleManagerHooks implements IModuleManager {
+export default class ModuleManagerValidation implements IModuleManager {
 
     contract_id: Uint8Array;
 
@@ -25,8 +24,8 @@ export default class ModuleManagerHooks implements IModuleManager {
         );
     }
 
-    get default_selector(): modhooks.selector {
-        return new modhooks.selector(1);
+    get default_selector(): modvalidation.selector {
+        return new modvalidation.selector(1);
     }
 
     install_module(
@@ -34,10 +33,10 @@ export default class ModuleManagerHooks implements IModuleManager {
         scopes: Uint8Array[],
         data: Uint8Array,
     ): void {
-        const module_interface = new IModHooks(contract_id);
+        const module_interface = new IModValidation(contract_id);
         const manifest = module_interface.manifest();
 
-        System.require(manifest.type_id == MODULE_HOOKS_TYPE_ID, "[account] wrong module_type_id");
+        System.require(manifest.type_id == MODULE_VALIDATION_TYPE_ID, "[account] wrong module_type_id");
 
         if (scopes.length > 0) {
             for (let i = 0; i < manifest.selectors.length; i++) {
@@ -47,7 +46,7 @@ export default class ModuleManagerHooks implements IModuleManager {
             }
         }
 
-        module_interface.on_install(new modhooks.on_install_args(data));
+        module_interface.on_install(new modvalidation.on_install_args(data));
     }
 
     uninstall_module(
@@ -55,9 +54,9 @@ export default class ModuleManagerHooks implements IModuleManager {
         data: Uint8Array
     ): void {
 
-        const module_interface = new IModHooks(contract_id);
+        const module_interface = new IModValidation(contract_id);
         const module = module_interface.manifest();
-        System.require(module.type_id == MODULE_HOOKS_TYPE_ID, "[account] wrong module_type_id");
+        System.require(module.type_id == MODULE_VALIDATION_TYPE_ID, "[account] wrong module_type_id");
 
         const selectors = this._get_selectors_by_module(contract_id);
         for (let i = 0; i < selectors.length; i++) {
@@ -65,23 +64,18 @@ export default class ModuleManagerHooks implements IModuleManager {
             this.storage.remove(selector);
         }
 
-        module_interface.on_uninstall(new modhooks.on_uninstall_args(data));
+        module_interface.on_uninstall(new modvalidation.on_uninstall_args(data));
     }
 
     get_modules(): Uint8Array[] {
         const result: Uint8Array[] = [];
-        const selectors = this.storage.getManyValues(new Uint8Array(0));
+        const modules = this.storage.getManyValues(new Uint8Array(0));
 
-        for (let i = 0; i < selectors.length; i++) {
-            const selector = selectors[i];
-            const modules = this.storage.get(selector);
-
-            if (modules && modules.value && modules.value.length > 0) {
-                for (let j = 0; j < modules.value.length; j++) {
-                    const current_contract_id = modules.value[j];
-                    if (ArrayBytes.includes(result, current_contract_id) == false) {
-                        result.push(current_contract_id);
-                    }
+        if (modules && modules.length > 0) {
+            for (let j = 0; j < modules.length; j++) {
+                const module = modules[j].value;
+                if (ArrayBytes.includes(result, module) == false) {
+                    result.push(module);
                 }
             }
         }
@@ -114,13 +108,13 @@ export default class ModuleManagerHooks implements IModuleManager {
         let selector = this.default_selector;
 
         if (level == 3) {
-            selector = new modhooks.selector(operation.entry_point, operation.contract_id);
+            selector = new modvalidation.selector(operation.entry_point, operation.contract_id);
         }
         else if (level == 2) {
-            selector = new modhooks.selector(operation.entry_point);
+            selector = new modvalidation.selector(operation.entry_point);
         }
 
-        return Protobuf.encode<modhooks.selector>(selector, modhooks.selector.encode);
+        return Protobuf.encode<modvalidation.selector>(selector, modvalidation.selector.encode);
     }
 
     _get_module_by_operation(operation: account.operation): Uint8Array|null {
