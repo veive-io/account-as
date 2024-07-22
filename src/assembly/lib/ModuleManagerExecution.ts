@@ -1,5 +1,5 @@
 import { account } from "../proto/account";
-import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
+import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { IModExecution, MODULE_EXECUTION_TYPE_ID, modexecution } from "@veive/mod-execution-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
@@ -103,15 +103,12 @@ export default class ModuleManagerExecution implements IModuleManager {
      * @param operation The operation to be executed.
      */
     execute(operation: account.operation): void {
-        const executors = this._get_modules_by_operation(operation);
+        const modules = this._get_modules_by_operation(operation);
 
-        if (executors && executors.length > 0) {
-            const caller = System.getCaller().caller;
-
-            for (let i = 0; i < executors.length; i++) {
-                if (caller && caller.length > 0 && Arrays.equal(caller, executors[i])) {
-                    continue;
-                }
+        if (modules && modules.length > 0) {
+            for (let i = 0; i < modules.length; i++) {
+                const module = modules[i];
+                System.log(`[account] selected execution ${Base58.encode(module)}`);
 
                 const args = new modexecution.execute_args();
                 const op = new modexecution.operation();
@@ -120,8 +117,8 @@ export default class ModuleManagerExecution implements IModuleManager {
                 op.args = operation.args;
                 args.operation = op;
 
-                const module = new IModExecution(executors[i]);
-                module.execute(args);
+                const module_interface = new IModExecution(module);
+                module_interface.execute(args);
             }
         }
     }

@@ -1,7 +1,7 @@
 import { MODULE_SIGN_SPACE_ID } from "../Constants";
 import { account } from "../proto/account";
 import IModuleManager from "./IModuleManager";
-import { System, Storage, Base58 } from "@koinos/sdk-as";
+import { System, Storage, Base58, Arrays } from "@koinos/sdk-as";
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 
 export default class ModuleManagerSign implements IModuleManager {
@@ -44,11 +44,22 @@ export default class ModuleManagerSign implements IModuleManager {
     }
 
     get_modules(): Uint8Array[] {
-        return [this.storage.get().value];
+        const result : Uint8Array[] = [];
+        const module = this.storage.get();
+        if (module && module.value) {
+            result.push(module.value!);
+        }
+
+        return result;
     }
 
     is_module_installed(contract_id: Uint8Array): boolean {
-        return this.storage.get() && this.storage.get().value ? true : false;
+        const module = this.storage.get();
+        if (module && module.value && Arrays.equal(module.value, contract_id)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

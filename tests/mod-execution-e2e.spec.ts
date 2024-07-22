@@ -1,5 +1,5 @@
 import { LocalKoinos } from "@roamin/local-koinos";
-import { Contract, Signer, Transaction, Provider } from "koilib";
+import { Contract, Signer, Transaction, Provider, utils } from "koilib";
 import path from "path";
 import { randomBytes } from "crypto";
 import { beforeAll, afterAll, it, expect } from "@jest/globals";
@@ -29,6 +29,12 @@ const accountContract = new Contract({
     abi: accountAbi,
     provider
 }).functions;
+
+const modSerializer = new Contract({
+    id: modSign.getAddress(),
+    abi: modAbi,
+    provider
+}).serializer;
 
 beforeAll(async () => {
     // start local-koinos node
@@ -62,9 +68,16 @@ afterAll(() => {
 });
 
 it("install error: caller must be itself", async () => {
+    const scope = await modSerializer.serialize({
+        entry_point: 1
+    }, "scope");
+
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 2,
-        contract_id: modSign.address
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -85,9 +98,16 @@ it("install error: caller must be itself", async () => {
 });
 
 it("install module", async () => {
+    const scope = await modSerializer.serialize({
+        entry_point: 1
+    }, "scope");
+
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 2,
-        contract_id: modSign.address
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -110,8 +130,14 @@ it("install module", async () => {
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-execution] called module install");
 
-    const { result } = await accountContract["get_modules"]();
-    expect(result.value[0]).toStrictEqual(modSign.address);
+    const { result: r1 } = await accountContract["is_module_installed"]({
+        module_type_id: 2,
+        contract_id: modSign.address
+    });
+    expect(r1.value).toStrictEqual(true);
+
+    const { result: r2 } = await accountContract["get_modules"]();
+    expect(r2.value).toStrictEqual([modSign.address]);
 });
 
 it("trigger module", async () => {
@@ -132,9 +158,12 @@ it("trigger module", async () => {
     await tx.pushOperation(exec);
     const receipt = await tx.send();
     await tx.wait();
+
+    console.log(receipt)
     
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-execution] execute called");
+    expect(receipt.logs).toContain(`[account] selected execution ${modSign.address}`);
 });
 
 it("uninstall module", async () => {

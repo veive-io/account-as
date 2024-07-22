@@ -202,8 +202,33 @@ export class Account {
   get_modules(): account.get_modules_result {
     const result = new account.get_modules_result([]);
 
-    const mod_manager = new ModuleManagerValidation(this.contractId);
-    result.value = mod_manager.get_modules();
+    const mod_manager_validation = new ModuleManagerValidation(this.contractId);
+    const validation_modules = mod_manager_validation.get_modules();
+    for (let i = 0; i < validation_modules.length; i++) {
+      const validation = validation_modules[i];
+      result.value.push(validation);
+    }
+
+    const mod_manager_execution = new ModuleManagerExecution(this.contractId);
+    const execution_modules = mod_manager_execution.get_modules();
+    for (let j = 0; j < execution_modules.length; j++) {
+      const execution = execution_modules[j];
+      result.value.push(execution);
+    }
+
+    const mod_manager_hooks = new ModuleManagerHooks(this.contractId);
+    const hook_modules = mod_manager_hooks.get_modules();
+    for (let k = 0; k < hook_modules.length; k++) {
+      const hook = hook_modules[k];
+      result.value.push(hook);
+    }
+
+    const mod_manager_sign = new ModuleManagerSign(this.contractId);
+    const sign_modules = mod_manager_sign.get_modules();
+    for (let l = 0; l < sign_modules.length; l++) {
+      const sign = sign_modules[l];
+      result.value.push(sign);
+    }
 
     return result;
   }

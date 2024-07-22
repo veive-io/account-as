@@ -30,11 +30,11 @@ const accountContract = new Contract({
     provider
 }).functions;
 
-const modContract = new Contract({
+const modSerializer = new Contract({
     id: modSign.getAddress(),
     abi: modAbi,
     provider
-});
+}).serializer;
 
 beforeAll(async () => {
     // start local-koinos node
@@ -67,10 +67,17 @@ afterAll(() => {
     localKoinos.stopNode();
 });
 
-/*
 it("install module error: caller must be itself", async () => {
+    const scope = await modSerializer.serialize({
+        entry_point: 1
+    }, "scope");
+
     const { operation: install_module } = await accountContract["install_module"]({
-        contract_id: modSign.address
+        module_type_id: 1,
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -89,12 +96,6 @@ it("install module error: caller must be itself", async () => {
 
     expect(error).toBeDefined();
 });
-*/
-
-/**
- *     
-
- */
 
 it("check module type is supported", async () => {
     const { result } = await accountContract["is_module_type_supported"]({
@@ -105,7 +106,7 @@ it("check module type is supported", async () => {
 })
 
 it("install module", async () => {
-    const scope = await modContract.serializer.serialize({
+    const scope = await modSerializer.serialize({
         entry_point: 1
     }, "scope");
 
