@@ -141,6 +141,12 @@ export default class ModuleManagerValidation implements IModuleManager {
         if (module != null) {
             System.log(`[account] selected validation ${Base58.encode(module)}`);
 
+            const caller = System.getCaller().caller;
+            if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
+                System.log(`[account] validation same caller ${Base58.encode(caller)}`)
+                return false;
+            }
+
             const op = new modvalidation.operation();
             op.contract_id = operation.contract_id;
             op.entry_point = operation.entry_point;

@@ -1,5 +1,5 @@
 import { LocalKoinos } from "@roamin/local-koinos";
-import { Contract, Signer, Transaction, Provider } from "koilib";
+import { Contract, Signer, Transaction, Provider, utils } from "koilib";
 import path from "path";
 import { randomBytes } from "crypto";
 import { beforeAll, afterAll, it, expect } from "@jest/globals";
@@ -62,7 +62,8 @@ afterAll(() => {
 });
 
 it("install module error: caller must be itself", async () => {
-    const { operation: install_module } = await accountContract["install_module"]({
+     const { operation: install_module } = await accountContract["install_module"]({
+        module_type_id: 3,
         contract_id: modSign.address
     }, { onlyOperation: true });
 
@@ -110,7 +111,7 @@ it("install module", async () => {
     expect(receipt.logs).toContain("[mod-sign] called module install");
 
     const { result } = await accountContract["get_modules"]();
-    expect(result.value[0]).toStrictEqual(modSign.address);
+    expect(result.value).toStrictEqual([modSign.address]);
 });
 
 it("trigger module is_valid_signature", async () => {
@@ -142,6 +143,7 @@ it("trigger module is_valid_signature", async () => {
     
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-sign] is_valid_signature called");
+    expect(receipt.logs).toContain(`[account] selected sign ${modSign.address}`);
 });
 
 it("uninstall module", async () => {

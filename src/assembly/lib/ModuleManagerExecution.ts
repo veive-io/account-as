@@ -106,9 +106,16 @@ export default class ModuleManagerExecution implements IModuleManager {
         const modules = this._get_modules_by_operation(operation);
 
         if (modules && modules.length > 0) {
+            const caller = System.getCaller().caller;
+
             for (let i = 0; i < modules.length; i++) {
                 const module = modules[i];
                 System.log(`[account] selected execution ${Base58.encode(module)}`);
+
+                if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
+                    System.log(`[account] execution same caller ${Base58.encode(caller)}`)
+                    continue;
+                }
 
                 const args = new modexecution.execute_args();
                 const op = new modexecution.operation();

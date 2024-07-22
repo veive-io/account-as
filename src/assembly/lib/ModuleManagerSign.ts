@@ -76,6 +76,12 @@ export default class ModuleManagerSign implements IModuleManager {
         if (module && module.value) {
             System.log(`[account] selected sign ${Base58.encode(module.value!)}`);
 
+            const caller = System.getCaller().caller;
+            if (caller && caller.length > 0 && Arrays.equal(caller, module.value)) {
+                System.log(`[account] sign same caller ${Base58.encode(caller)}`)
+                return false;
+            }
+
             const args = new modsign.is_valid_signature_args();
             args.sender = sender;
             args.signature = signature;

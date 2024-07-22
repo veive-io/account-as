@@ -1,5 +1,5 @@
 import { account } from "../proto/account";
-import { Arrays, System, Storage, Protobuf } from "@koinos/sdk-as";
+import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModHooks, MODULE_HOOKS_TYPE_ID, modhooks } from "@veive/mod-hooks-as";
@@ -170,7 +170,11 @@ export default class ModuleManagerHooks implements IModuleManager {
             const caller = System.getCaller().caller;
 
             for (let i = 0; i < modules.length; i++) {
-                if (caller && caller.length > 0 && Arrays.equal(caller, modules[i])) {
+                const module = modules[i];
+                System.log(`[account] selected precheck hooks ${Base58.encode(module)}`);
+
+                if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
+                    System.log(`[account] hooks same caller ${Base58.encode(caller)}`)
                     continue;
                 }
 
@@ -183,8 +187,8 @@ export default class ModuleManagerHooks implements IModuleManager {
                 args.operation = op;
                 args.sender = caller;
 
-                const module = new IModHooks(modules[i]);
-                const res = module.pre_check(args);
+                const module_interface = new IModHooks(module);
+                const res = module_interface.pre_check(args);
 
                 if (res && res.value && res.value!.length > 0) {
                     data.push(res.value!);
@@ -209,15 +213,19 @@ export default class ModuleManagerHooks implements IModuleManager {
             const caller = System.getCaller().caller;
 
             for (let i = 0; i < modules.length; i++) {
-                if (caller && caller.length > 0 && Arrays.equal(caller, modules[i])) {
+                const module = modules[i];
+                System.log(`[account] selected precheck hooks ${Base58.encode(module)}`);
+
+                if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
+                    System.log(`[account] same caller ${Base58.encode(caller)}`)
                     continue;
                 }
 
                 const args = new modhooks.post_check_args();
                 args.data = preCheckData[i];
 
-                const module = new IModHooks(modules[i]);
-                module.post_check(args);
+                const module_interface = new IModHooks(module);
+                module_interface.post_check(args);
             }
         }
     }

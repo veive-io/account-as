@@ -106,10 +106,16 @@ export class Account {
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
         mod_manager_execution.install_module(args.contract_id!, args.scopes, data);
         break;
+      case MODULE_SIGN_TYPE_ID:
+        const mod_manager_sign = new ModuleManagerSign(this.contractId);
+        mod_manager_sign.install_module(args.contract_id!, args.scopes, data);
+        break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
         module_manager_hooks.install_module(args.contract_id!, args.scopes, data);
         break;
+      default:
+        System.fail("unsupported module_type_id");
     }
   }
   
@@ -137,10 +143,16 @@ export class Account {
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
         mod_manager_execution.uninstall_module(args.contract_id!, data);
         break;
+      case MODULE_SIGN_TYPE_ID:
+        const module_manager_sign = new ModuleManagerSign(this.contractId);
+        module_manager_sign.uninstall_module(args.contract_id!, data);
+        break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
         module_manager_hooks.uninstall_module(args.contract_id!, data);
         break;
+      default:
+        System.fail("unsupported module_type_id");
     }
   }
 
@@ -164,10 +176,16 @@ export class Account {
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
         result.value = mod_manager_execution.is_module_installed(args.contract_id!); 
         break;
+      case MODULE_SIGN_TYPE_ID:
+        const module_manager_sign = new ModuleManagerSign(this.contractId);
+        result.value = module_manager_sign.is_module_installed(args.contract_id!); 
+        break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
         result.value = module_manager_hooks.is_module_installed(args.contract_id!); 
         break;
+      default:
+        System.fail("unsupported module_type_id");
     }
 
     return result;

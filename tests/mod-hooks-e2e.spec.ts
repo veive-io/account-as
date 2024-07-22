@@ -1,5 +1,5 @@
 import { LocalKoinos } from "@roamin/local-koinos";
-import { Contract, Signer, Transaction, Provider } from "koilib";
+import { Contract, Signer, Transaction, Provider, utils } from "koilib";
 import path from "path";
 import { randomBytes } from "crypto";
 import { beforeAll, afterAll, it, expect } from "@jest/globals";
@@ -29,6 +29,12 @@ const accountContract = new Contract({
     abi: accountAbi,
     provider
 }).functions;
+
+const modSerializer = new Contract({
+    id: modSign.getAddress(),
+    abi: modAbi,
+    provider
+}).serializer;
 
 beforeAll(async () => {
     // start local-koinos node
@@ -62,9 +68,16 @@ afterAll(() => {
 });
 
 it("install module error: caller must be itself", async () => {
+    const scope = await modSerializer.serialize({
+        entry_point: 1
+    }, "scope");
+
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 4,
-        contract_id: modSign.address
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -85,9 +98,16 @@ it("install module error: caller must be itself", async () => {
 });
 
 it("install module", async () => {
+    const scope = await modSerializer.serialize({
+        entry_point: 1
+    }, "scope");
+
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 4,
-        contract_id: modSign.address
+        contract_id: modSign.address,
+        scopes: [
+            utils.encodeBase64url(scope)
+        ]
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -133,9 +153,13 @@ it("trigger module hooks", async () => {
     const receipt = await tx.send();
     await tx.wait();
     
+    console.log(receipt);
+
     expect(receipt).toBeDefined();
-    expect(receipt.logs.includes("[mod-hooks] pre_check called")).toBe(true);
-    expect(receipt.logs.includes("[mod-hooks] post_check called")).toBe(true);
+    expect(receipt.logs).toContain("[mod-hooks] pre_check called");
+    expect(receipt.logs).toContain("[mod-hooks] post_check called");
+    expect(receipt.logs).toContain(`[account] selected precheck hooks ${modSign.address}`);
+    expect(receipt.logs).toContain(`[account] selected precheck hooks ${modSign.address}`);
 });
 
 it("uninstall module", async () => {
