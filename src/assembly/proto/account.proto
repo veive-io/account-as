@@ -100,6 +100,6 @@ message modules_execution {
     repeated bytes value = 1 [(koinos.btype) = ADDRESS];
 }
 
-message modules_sign {
-    repeated bytes value = 1 [(koinos.btype) = ADDRESS];
+message module_sign {
+    bytes value = 1 [(koinos.btype) = ADDRESS];
 }

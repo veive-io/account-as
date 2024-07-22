@@ -2,27 +2,17 @@ import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
-import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
+import { MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
 import { account } from "./proto/account";
-import ModuleManagerValidation from "./ModuleManagerValidation";
-import ModuleManagerHooks from "./ModuleManagerHooks";
-import ModuleManagerExecution from "./ModuleManagerExecution";
-
-const MODULE_SIGN_SPACE_ID = 3;
+import ModuleManagerValidation from "./lib/ModuleManagerValidation";
+import ModuleManagerHooks from "./lib/ModuleManagerHooks";
+import ModuleManagerExecution from "./lib/ModuleManagerExecution";
+import ModuleManagerSign from "./lib/ModuleManagerSign";
 
 export class Account {
   callArgs: System.getArgumentsReturn | null;
 
   contractId: Uint8Array = System.getContractId();
-
-  mod_sign: Storage.Map<Uint8Array, account.mod> =
-    new Storage.Map(
-      this.contractId,
-      MODULE_SIGN_SPACE_ID,
-      account.mod.decode,
-      account.mod.encode,
-      () => new account.mod()
-    );
 
   /**
    * Executes the given operation after performing pre-checks and post-checks.
@@ -228,7 +218,8 @@ export class Account {
    */
   is_valid_signature(args: account.is_valid_signature_args): account.is_valid_signature_result {
     const result = new account.is_valid_signature_result(false);
-    result.value = this._validate_signature(args.sender!, args.signature!, args.tx_id!);
+    const module_manager = new ModuleManagerSign(this.contractId);
+    result.value = module_manager.validate_signature(args.sender!, args.signature!, args.tx_id!);
     return result;
   }
 
@@ -360,44 +351,5 @@ export class Account {
   _require_valid_operation(operation: account.operation): void {
     const module_manager = new ModuleManagerValidation(this.contractId);
     System.require( module_manager.validate_operation(operation) == true, 'operation is not valid');
-  }
-
-  /**
-   * Validates the signature using all registered sign modules.
-   * 
-   * @param sender The sender's address.
-   * @param signature The signature to validate.
-   * @param tx_id The transaction ID.
-   * @returns `true` if any sign module validates the signature successfully, otherwise `false`.
-   */
-  _validate_signature(sender: Uint8Array, signature: Uint8Array, tx_id: Uint8Array): boolean {
-    const modules = this.mod_sign.getManyKeys(new Uint8Array(0));
-
-    if (modules && modules.length > 0) {
-      const caller = System.getCaller().caller;
-
-      const args = new modsign.is_valid_signature_args();
-      args.sender = sender;
-      args.signature = signature;
-      args.tx_id = tx_id;
-      
-      for (let i = 0; i < modules.length; i++) {
-        if (caller && caller.length > 0 && Arrays.equal(caller, modules[i])) {
-          continue;
-        }
-  
-        const validatorModule = this.mod_sign.get(modules[i]);
-        if (validatorModule) {
-          const module = new IModSign(modules[i]);
-          const res = module.is_valid_signature(args);
-  
-          if (res.value == true) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
   }
 }

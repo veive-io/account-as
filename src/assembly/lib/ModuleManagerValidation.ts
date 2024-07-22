@@ -1,25 +1,22 @@
-import { account } from "./proto/account";
+import { account } from "../proto/account";
 import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive/mod-validation-as";
-
-const SPACE_ID = 1;
+import { MODULE_VALIDATION_SPACE_ID } from "../Constants";
 
 export default class ModuleManagerValidation implements IModuleManager {
 
     contract_id: Uint8Array;
 
-    constructor(
-        contract_id: Uint8Array,
-    ) {
+    constructor(contract_id: Uint8Array) {
         this.contract_id = contract_id;
     }
 
     get storage(): Storage.Map<Uint8Array, account.module_validation> {
         return new Storage.Map(
             this.contract_id,
-            SPACE_ID,
+            MODULE_VALIDATION_SPACE_ID,
             account.module_validation.decode,
             account.module_validation.encode,
             () => new account.module_validation()
@@ -54,7 +51,6 @@ export default class ModuleManagerValidation implements IModuleManager {
         contract_id: Uint8Array,
         data: Uint8Array
     ): void {
-
         const module_interface = new IModValidation(contract_id);
         const module = module_interface.manifest();
         System.require(module.type_id == MODULE_VALIDATION_TYPE_ID, "[account] wrong module_type_id");
@@ -164,6 +160,8 @@ export default class ModuleManagerValidation implements IModuleManager {
             }
 
         }
+
+        System.log(`[account] no validation found`);
 
         return false;
     }

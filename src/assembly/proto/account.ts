@@ -929,26 +929,24 @@ export namespace account {
     }
   }
 
-  export class modules_sign {
-    static encode(message: modules_sign, writer: Writer): void {
+  export class module_sign {
+    static encode(message: module_sign, writer: Writer): void {
       const unique_name_value = message.value;
-      if (unique_name_value.length !== 0) {
-        for (let i = 0; i < unique_name_value.length; ++i) {
-          writer.uint32(10);
-          writer.bytes(unique_name_value[i]);
-        }
+      if (unique_name_value !== null) {
+        writer.uint32(10);
+        writer.bytes(unique_name_value);
       }
     }
 
-    static decode(reader: Reader, length: i32): modules_sign {
+    static decode(reader: Reader, length: i32): module_sign {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new modules_sign();
+      const message = new module_sign();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.value.push(reader.bytes());
+            message.value = reader.bytes();
             break;
 
           default:
@@ -960,9 +958,9 @@ export namespace account {
       return message;
     }
 
-    value: Array<Uint8Array>;
+    value: Uint8Array | null;
 
-    constructor(value: Array<Uint8Array> = []) {
+    constructor(value: Uint8Array | null = null) {
       this.value = value;
     }
   }

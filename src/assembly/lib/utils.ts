@@ -1,13 +1,4 @@
-import { Arrays, Protobuf } from "@koinos/sdk-as";
-import { account } from "./proto/account";
-
-export function selector_encode(selector: account.selector): Uint8Array {
-    return Protobuf.encode<account.selector>(selector, account.selector.encode);
-}
-
-export function selector_decode(selector: Uint8Array): account.selector {
-    return Protobuf.decode<account.selector>(selector, account.selector.decode);
-}
+import { Arrays } from "@koinos/sdk-as";
 
 export class ArrayBytes {
 
