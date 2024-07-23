@@ -104,6 +104,7 @@ export default class ModuleManagerExecution implements IModuleManager {
      */
     execute(operation: account.operation): void {
         const modules = this._get_modules_by_operation(operation);
+        let called_modules = 0;
 
         if (modules && modules.length > 0) {
             const caller = System.getCaller().caller;
@@ -126,7 +127,12 @@ export default class ModuleManagerExecution implements IModuleManager {
 
                 const module_interface = new IModExecution(module);
                 module_interface.execute(args);
+                called_modules++;
             }
+        }
+
+        if (called_modules == 0) {
+            System.fail('[account] no execution found');
         }
     }
 
