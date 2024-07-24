@@ -67,21 +67,49 @@ Veive uses a "scope" system to manage when and how modules are activated, provid
 
 ### **Repository Overview**
 
-Veive's ecosystem includes several repositories:
+The Veive protocol comprises several repositories that together implement a modular smart account system on the Koinos blockchain. Here's an overview of each repository and its role in the Veive ecosystem:
 
-- **[account-as](https://github.com/veiveprotocol/account-as)**: Core repository for the Veive account system.
-- **[mod-validation-as](https://github.com/veiveprotocol/mod-validation-as)**: Framework for creating validation modules.
-- **[mod-execution-as](https://github.com/veiveprotocol/mod-execution-as)**: Focuses on execution modules.
-- **[mod-sign-as](https://github.com/veiveprotocol/mod-sign-as)**: Provides the foundation for signature modules.
-- **[mod-hooks-as](https://github.com/veiveprotocol/mod-hooks-as)**: For implementing pre and post-operation checks.
+#### **Core Smart Account Repository**
+
+1. **[account-as](https://github.com/veiveprotocol/account-as)**
+   - **Description**: This repository contains the core smart contract for the Veive account system. Each user deploys this contract to manage operations, validate signatures, and interact with various modules. It serves as the main hub where modules are installed, providing a customizable and secure environment for managing blockchain interactions.
+
+#### **Core Module Repositories**
+
+These repositories, though external dependencies, are integral to the functionality of Veive smart accounts. They provide essential classes, protobuf definitions, and interfaces for developing and interacting with various types of modules.
+
+1. **[mod-validation-as](https://github.com/veiveprotocol/mod-validation-as)**
+   - **Description**: Framework for creating validation modules that verify operations before execution. Developers extend the `ModValidator` class and use the provided protobuf definitions to build custom validation logic.
+
+2. **[mod-execution-as](https://github.com/veiveprotocol/mod-execution-as)**
+   - **Description**: Focuses on execution modules responsible for specific operations like token transfers or smart contract interactions. The `ModExecution` class is extended to implement these functionalities.
+
+3. **[mod-sign-as](https://github.com/veiveprotocol/mod-sign-as)**
+   - **Description**: Provides the foundation for signature modules, defining different methods for signature verification, such as ECDSA or WebAuthn. Developers extend the `ModSign` class to implement custom signature verification mechanisms.
+
+4. **[mod-hooks-as](https://github.com/veiveprotocol/mod-hooks-as)**
+   - **Description**: For hook modules, which implement pre-checks and post-checks around operations. The `ModHooks` class allows developers to create modules that execute custom logic before or after an operation, such as enforcing spending limits or logging transactions.
 
 ### **Specific Veive Modules**
 
-1. **[mod-validation-any-as](https://github.com/veiveprotocol/mod-validation-any-as)**: Uses the allowance mechanism to pre-authorize operations, ensuring only pre-authorized operations are executed.
-2. **[mod-execution-any-as](https://github.com/veiveprotocol/mod-execution-any-as)**: A generic execution module for handling a wide range of operations.
-3. **[mod-validation-signature-as](https://github.com/veiveprotocol/mod-validation-signature-as)**: Validates the authenticity of operations' signatures.
-4. **[mod-validation-multisign-as](https://github.com/veiveprotocol/mod-validation-multisign-as)**: Supports multi-signature validation for scenarios like social recovery or multi-party wallets.
-5. **[mod-sign-ecdsa-as](https://github.com/veiveprotocol/mod-sign-ecdsa-as)**: Verifies operations signed with ECDSA.
-6. **[mod-sign-webauthn-as](https://github.com/veiveprotocol/mod-sign-webauthn-as)**: Supports signature verification using the WebAuthn standard.
+Based on the core module repositories, specific modules have been developed to provide various functionalities within the Veive ecosystem:
 
-This README provides a summary of the Veive protocol's modular smart account system on the Koinos blockchain. For detailed documentation, refer to the specific module repositories and the [Veive GitHub](https://github.com/veiveprotocol).
+1. **[mod-validation-any-as](https://github.com/veiveprotocol/mod-validation-any-as)**
+   - **Function**: Utilizes the allowance mechanism to pre-authorize operations, ensuring that only pre-authorized operations are executed. This module is typically installed in the scope "entry_point=allow" to manage allowances for various operations.
+
+2. **[mod-execution-any-as](https://github.com/veiveprotocol/mod-execution-any-as)**
+   - **Function**: A generic execution module that handles any operation, commonly installed in the "any" scope. It is versatile and can execute a wide range of operations without specific checks.
+
+3. **[mod-validation-signature-as](https://github.com/veiveprotocol/mod-validation-signature-as)**
+   - **Function**: Validates signatures using different signature methods, often installed in the "entry_point=allow" scope to verify the authenticity of operations before they are allowed.
+
+4. **[mod-validation-multisign-as](https://github.com/veiveprotocol/mod-validation-multisign-as)**
+   - **Function**: Supports multi-signature validation, ideal for scenarios like social recovery or multi-party wallets. Users can specify a set of "guardians" and a threshold of signatures required to authorize an operation.
+
+5. **[mod-sign-ecdsa-as](https://github.com/veiveprotocol/mod-sign-ecdsa-as)**
+   - **Function**: Specifically for verifying ECDSA signatures. This module ensures that operations are signed with a valid ECDSA key, providing a standard method of signature verification.
+
+6. **[mod-sign-webauthn-as](https://github.com/veiveprotocol/mod-sign-webauthn-as)**
+   - **Function**: Enables signature verification using the WebAuthn standard, supporting the use of passkeys for authentication. It is designed for strong, phishing-resistant authentication scenarios.
+
+These modules and repositories collectively create a flexible and secure framework for managing smart accounts on the Koinos blockchain. By leveraging the modularity and adaptability of the system, developers and users can tailor their smart accounts to meet specific security, functionality, and usability needs.
