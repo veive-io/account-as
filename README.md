@@ -47,7 +47,7 @@ ERC-7579 includes a centralized "EntryPoint" contract for routing all operations
 
 #### **Operation Validation and `authorize` Method**
 
-Veive extends operation validation to include not only initial user operations but also "external" operations generated internally by contracts. This ensures comprehensive validation of all actions, including those that could manipulate transaction outcomes.
+Veive extends operation validation to include not only initial user operations but also "external" operations generated when a contract calls an external contract. This ensures comprehensive validation of all actions, including those that could manipulate transaction outcomes.
 
 The `authorize` method is a crucial addition, automatically invoked for every operation requiring validation. It checks if the operation is permitted by consulting relevant validation modules, ensuring secure and authorized execution of all actions.
 
