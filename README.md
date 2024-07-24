@@ -1,7 +1,5 @@
 ## **Veive Protocol: `account-as` README**
 
----
-
 ### **Introduction**
 
 Veive is a protocol designed to implement modular smart accounts on the Koinos blockchain, inspired by the ERC-7579 standard. It leverages the flexibility of modular design to offer advanced features such as customizable security, functionality, and user experience. Unlike traditional blockchain accounts, modular smart accounts in Veive can be tailored to specific needs through the addition and configuration of various modules, enhancing both flexibility and security.
@@ -10,13 +8,13 @@ Veive is a protocol designed to implement modular smart accounts on the Koinos b
 
 Veive's modular architecture categorizes modules into four main types, each serving a distinct role in enhancing account functionalities:
 
-1. **Validation Modules (mod-validation-as)**: Verify the legitimacy and authorization of operations, ensuring that all actions comply with security policies.
+1. **Validation Modules**: Verify the legitimacy and authorization of operations, ensuring that all actions comply with security policies.
 
-2. **Execution Modules (mod-execution-as)**: Execute specific actions like token transfers or smart contract calls once an operation has been validated.
+2. **Execution Modules**: Execute specific actions like token transfers or smart contract calls once an operation has been validated.
 
-3. **Signature Modules (mod-sign-as)**: Provide various methods for signing operations, supporting authentication mechanisms like ECDSA and WebAuthn.
+3. **Signature Modules**: Provide various methods for signing operations, supporting authentication mechanisms like ECDSA and WebAuthn.
 
-4. **Hook Modules (mod-hooks-as)**: Execute additional checks or actions before and after the main operation, such as setting spending limits or logging transactions.
+4. **Hook Modules**: Execute additional checks or actions before and after the main operation, such as setting spending limits or logging transactions.
 
 ### **Account Class Interface**
 
