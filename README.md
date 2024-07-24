@@ -1,166 +1,89 @@
-# Veive SCA Account
+## **Veive Protocol: `account-as` README**
 
-The Veive SCA Account project provides a modular smart account implementation for the Koinos blockchain, inspired by the ERC-7579 standard. This modular approach allows for flexible, pluggable functionality through different types of modules that can be installed to extend the capabilities of the smart account.
+---
 
-## Differences with the ERC-7579 Standard
+### **Introduction**
 
-While implementing the standard, there are differences due to Koinos being different from EVM blockchains.
+Veive is a protocol designed to implement modular smart accounts on the Koinos blockchain, inspired by the ERC-7579 standard. It leverages the flexibility of modular design to offer advanced features such as customizable security, functionality, and user experience. Unlike traditional blockchain accounts, modular smart accounts in Veive can be tailored to specific needs through the addition and configuration of various modules, enhancing both flexibility and security.
 
-- **No EntryPoint**: In the ERC-7579 standard, all requests are routed through a single contract called EntryPoint, which performs all operation checks by engaging validators. In Koinos, the user's account is called directly to execute operations. As a result, validators are engaged immediately within the execution methods.
-- **Separate Sign Module**: In our standard, we prefer to separate signature validation modules from operation validation modules because their processing differs. All operation validators must validate the operation, whereas for signature validators, a single positive validation is sufficient to proceed with the operation.
-- **Authorize**: Due to the previous points, Koinos provides an automatic mechanism that calls the "authorize" method of the account to verify all operations launched internally.
-- **Method Input/Output**: Generally, the input/output parameters of the methods are closely tied to the internal workings of the blockchain, so they have been modified from the general standard to fit the characteristics of Koinos.
+### **Types of Modules**
 
-## Overview
+Veive's modular architecture categorizes modules into four main types, each serving a distinct role in enhancing account functionalities:
 
-### Modular Smart Accounts
+1. **Validation Modules (mod-validation-as)**: Verify the legitimacy and authorization of operations, ensuring that all actions comply with security policies.
 
-A modular smart account is designed to be extensible through the use of modules. These modules add specific functionalities to the smart account, making it more flexible and adaptable to various use cases. The Veive SCA Account supports the installation of different types of modules:
+2. **Execution Modules (mod-execution-as)**: Execute specific actions like token transfers or smart contract calls once an operation has been validated.
 
-1. **Validation Modules**: These modules validate operations to ensure they meet specific criteria before execution.
-2. **Signature Modules**: These modules validate signatures to ensure the authenticity of transactions.
-3. **Hooks Modules**: These modules perform tasks such as pre-checks and post-checks, enabling custom logic to be executed before and after the main operation.
-4. **Execution Modules**: These modules handle the execution of specific operations.
+3. **Signature Modules (mod-sign-as)**: Provide various methods for signing operations, supporting authentication mechanisms like ECDSA and WebAuthn.
 
-### Example Modules
+4. **Hook Modules (mod-hooks-as)**: Execute additional checks or actions before and after the main operation, such as setting spending limits or logging transactions.
 
-- **Validation Allowance**: Ensures the authenticity of an operation preauthorized by the user, guaranteeing that the approved action is what actually occurs. These modules help in verifying that the user’s pre-approval matches the intended transaction.
-- **Signature Controls**: Beyond the classic ECDSA, modules can include WebAuthn, multisignature schemes, and other advanced cryptographic methods to validate signatures.
-- **Additional Checks**: Modules like "daily or weekly spending limit" can enforce spending caps over specific time frames, adding a layer of financial control and security.
-- **Piggybank**: Automatically saves a percentage of the user's spending into a wallet savings account, encouraging savings.
-- **Account Recovery**: Implements various account recovery methods, offering flexibility and enhanced security in case of account compromise or loss of access.
-- **Custom Authentication**: Modules for integrating different authentication mechanisms, such as biometric authentication, 2FA, or custom OAuth providers.
-- **Delegated Spending**: Allows users to delegate spending authority to specific addresses within predefined limits, useful for businesses or family accounts.
+### **Account Class Interface**
 
-### How It Works
+The `Account` class provides essential methods for managing operations and interacting with installed modules:
 
-The smart account manages modules through a structured process:
-- **Installation and Uninstallation**: Modules can be installed and uninstalled to dynamically modify the account's behavior.
-- **Execution Flow**: When an operation is executed, the smart account invokes validation modules first, followed by hooks (pre-checks), then the execution modules, and finally the hooks (post-checks).
+- **install_module**: Installs a module within a specific scope, allowing it to perform its designated function.
+- **uninstall_module**: Removes a module and its associated functionalities.
+- **execute**: Executes a user-initiated operation after pre-checks and post-checks using registered hook modules.
+- **execute_executor**: Specifically handles operations initiated by registered executor modules.
+- **execute_user**: Facilitates direct execution of operations by the user.
+- **is_valid_signature**: Validates the authenticity of signatures using the active signature module.
+- **is_valid_operation**: Checks the validity of an operation by consulting all active validation modules.
+- **authorize**: Ensures that all operations, including "external" ones, are authorized before execution.
 
-## Installation
+### **Key Differences from ERC-7579**
 
-To install the package, use npm or yarn:
+#### **Operation-Centric Design**
 
-```bash
-npm install @veive/account
-```
+Unlike ERC-7579, which does not focus on the detailed concept of "operation," Veive emphasizes this aspect. An operation in Veive is a single action within a transaction, identified by:
 
-## Usage
+- **contract_id**: The identifier of the smart contract being interacted with.
+- **entry_point**: The specific method being invoked.
+- **args**: The arguments passed to the method.
 
-### Importing the Package
+This detailed specification allows for precise control and validation of operations.
 
-First, import the necessary components from the package:
+#### **EntryPoint Concept**
 
-```typescript
-import { Account } from '@veive/account';
-```
+ERC-7579 includes a centralized "EntryPoint" contract for routing all operations, while Koinos allows operations to be sent directly to smart accounts. This decentralization enhances flexibility but requires a robust system for operation validation.
 
-### Example Usage
+#### **Operation Validation and `authorize` Method**
 
-Here is an example of how to use the `Account` module to install a module and execute an operation:
+Veive extends operation validation to include not only initial user operations but also "external" operations generated internally by contracts. This ensures comprehensive validation of all actions, including those that could manipulate transaction outcomes.
 
-```typescript
-const { operation: install_module } = await accountContract["install_module"]({
-        contract_id: modSign.address
-    }, { onlyOperation: true });
+The `authorize` method is a crucial addition, automatically invoked for every operation requiring validation. It checks if the operation is permitted by consulting relevant validation modules, ensuring secure and authorized execution of all actions.
 
-const tx = new Transaction({
-    signer: accountSign,
-    provider
-});
+### **Contextualization and Module Selection**
 
-const { operation: exec } = await accountContract["execute_user"]({
-    operation: {
-        contract_id: install_module.call_contract.contract_id,
-        entry_point: install_module.call_contract.entry_point,
-        args: install_module.call_contract.args
-    }
-}, { onlyOperation: true });
+Veive uses a "scope" system to manage when and how modules are activated, providing a more flexible and performance-optimized experience compared to ERC-7579. Scopes are categorized into three levels:
 
-await tx.pushOperation(exec);
-const receipt = await tx.send();
-await tx.wait();
-```
+- **entry_point + contract_id**: Modules specific to a particular method of a specific contract.
+- **entry_point**: Modules active for a specific method across all contracts.
+- **any**: Modules applicable to any operation.
 
-### Interface and Methods
+#### **Scope Handling**
 
-The `Account` class provides several methods for managing modules and executing operations. Below is a brief overview of the key methods:
+- **Validators**: Only one valid module is sought, starting from the most specific scope.
+- **Executor and Hooks**: All relevant modules within the scopes are executed.
+- **Signature Modules**: Only one module can be active at a time, with a default scope.
 
-#### `install_module`
-Installs a module to the smart account. This method allows adding new functionalities to the account by installing different types of modules (Validation, Signature, Hooks, Execution).
+### **Repository Overview**
 
-#### `uninstall_module`
-Uninstalls a module from the smart account. This method removes the installed module, thereby removing its functionality from the account.
+Veive's ecosystem includes several repositories:
 
-#### `execute`
-Executes an operation by invoking the necessary validation modules, pre-check hooks, execution modules, and post-check hooks. 
-- **Requirements**: The caller must not be the smart account itself, and it must not be a registered execution module.
+- **[account-as](https://github.com/veiveprotocol/account-as)**: Core repository for the Veive account system.
+- **[mod-validation-as](https://github.com/veiveprotocol/mod-validation-as)**: Framework for creating validation modules.
+- **[mod-execution-as](https://github.com/veiveprotocol/mod-execution-as)**: Focuses on execution modules.
+- **[mod-sign-as](https://github.com/veiveprotocol/mod-sign-as)**: Provides the foundation for signature modules.
+- **[mod-hooks-as](https://github.com/veiveprotocol/mod-hooks-as)**: For implementing pre and post-operation checks.
 
-#### `execute_executor`
-Executes an operation from a registered executor module. This method checks that the caller is a registered execution module before proceeding with the operation.
-- **Requirements**: The caller must be a registered execution module.
+### **Specific Veive Modules**
 
-#### `execute_user`
-Executes a user operation directly by calling the specified contract and entry point with the provided arguments. This method is used for operations that do not require module validation.
-- **Requirements**: The caller must be empty (indicating it is not a contract call).
+1. **[mod-validation-any-as](https://github.com/veiveprotocol/mod-validation-any-as)**: Uses the allowance mechanism to pre-authorize operations, ensuring only pre-authorized operations are executed.
+2. **[mod-execution-any-as](https://github.com/veiveprotocol/mod-execution-any-as)**: A generic execution module for handling a wide range of operations.
+3. **[mod-validation-signature-as](https://github.com/veiveprotocol/mod-validation-signature-as)**: Validates the authenticity of operations' signatures.
+4. **[mod-validation-multisign-as](https://github.com/veiveprotocol/mod-validation-multisign-as)**: Supports multi-signature validation for scenarios like social recovery or multi-party wallets.
+5. **[mod-sign-ecdsa-as](https://github.com/veiveprotocol/mod-sign-ecdsa-as)**: Verifies operations signed with ECDSA.
+6. **[mod-sign-webauthn-as](https://github.com/veiveprotocol/mod-sign-webauthn-as)**: Supports signature verification using the WebAuthn standard.
 
-#### `is_valid_signature`
-Validates a signature by invoking the installed signature validation modules. This method checks the authenticity of the transaction based on the provided signature.
-
-#### `is_valid_operation`
-Validates an operation by invoking the installed operation validation modules. This method ensures that the operation meets specific criteria defined by the installed validation modules before execution.
-
-#### `is_module_installed`
-Checks if a module of a specific type is installed in the smart account. Returns a boolean indicating whether the module is installed.
-
-#### `is_module_type_supported`
-Checks if a module type is supported by the smart account. Returns a boolean indicating whether the module type is supported.
-
-#### `get_modules`
-Retrieves a list of all installed modules. This method returns a list of contract IDs for the installed modules.
-
-#### `authorize`
-This method does not belong to the standard but is closely related to Koinos. The method is called internally by Koinos whenever a `checkAuthority` call is made to verify the authenticity of the operation. The method engages validators to validate the operation. Read the section on differences with the standard for more details.
-
-## Scripts
-
-### Build
-
-To compile the package, run:
-
-```bash
-yarn build
-```
-
-### Test
-
-To run the tests, run:
-
-```bash
-yarn jest
-```
-
-### Dist
-
-To create a distribution, run:
-
-```bash
-yarn dist
-```
-
-### Deploy
-
-To deploy the package, run:
-
-```bash
-yarn deploy
-```
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request on the [GitHub repository](https://github.com/veiveprotocol).
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
+This README provides a summary of the Veive protocol's modular smart account system on the Koinos blockchain. For detailed documentation, refer to the specific module repositories and the [Veive GitHub](https://github.com/veiveprotocol).

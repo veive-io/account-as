@@ -1,4 +1,4 @@
-import { System, Storage, authority, Arrays } from "@koinos/sdk-as";
+import { System, authority, Arrays } from "@koinos/sdk-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
