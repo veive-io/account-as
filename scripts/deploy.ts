@@ -5,7 +5,7 @@ import { Signer, Contract, Provider } from "koilib";
 import * as dotenv from "dotenv";
 import { TransactionJson, TransactionOptions } from "koilib/lib/interface";
 import { getBytecode } from "./utils";
-import abi from "../src/build/smartaccount-abi.json";
+import abi from "../build/account-abi.json";
 import koinosConfig from "../src/koinos.config.js";
 
 dotenv.config();

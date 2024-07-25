@@ -1,69 +1,96 @@
-## **Veive Protocol: `account-as` README**
+### **Introduzione**
 
-### **Introduction**
+Veive è un protocollo che implementa account smart modulari, ispirato allo standard ERC-7579 e ottimizzato per la blockchain Koinos. Gli account smart modulari rappresentano un'evoluzione significativa rispetto agli account tradizionali, combinando la flessibilità dei moduli aggiuntivi con la sicurezza e l'efficienza della blockchain. Lo standard ERC-7579 è stato sviluppato per promuovere la modularità e l'interoperabilità, consentendo la personalizzazione e l'estensibilità degli account tramite l'aggiunta di moduli specifici per diverse funzionalità.
 
-Veive is a protocol designed to implement modular smart accounts on the Koinos blockchain, inspired by the ERC-7579 standard. It leverages the flexibility of modular design to offer advanced features such as customizable security, functionality, and user experience. Unlike traditional blockchain accounts, modular smart accounts in Veive can be tailored to specific needs through the addition and configuration of various modules, enhancing both flexibility and security.
+**Vantaggi dello Standard ERC-7579**
 
-### **Types of Modules**
+1. **Modularità**: Lo standard permette agli sviluppatori di aggiungere o rimuovere funzionalità in modo dinamico tramite moduli. Ciò consente di adattare gli account a nuove esigenze senza dover modificare il codice di base, migliorando l'aggiornabilità e la gestione del rischio.
 
-Veive's modular architecture categorizes modules into four main types, each serving a distinct role in enhancing account functionalities:
+2. **Interoperabilità**: ERC-7579 favorisce la creazione di un ecosistema unificato in cui i moduli possono interagire tra loro e con diversi tipi di account, facilitando l'integrazione di nuove funzionalità e migliorando l'esperienza dell'utente.
 
-1. **Validation Modules**: Verify the legitimacy and authorization of operations, ensuring that all actions comply with security policies.
+3. **Sicurezza**: La separazione delle funzioni in moduli distinti consente una gestione più granulare delle autorizzazioni e delle verifiche, aumentando la sicurezza dell'account.
 
-2. **Execution Modules**: Execute specific actions like token transfers or smart contract calls once an operation has been validated.
+**Carenze e Vantaggi di Koinos**
 
-3. **Signature Modules**: Provide various methods for signing operations, supporting authentication mechanisms like ECDSA and WebAuthn.
+Koinos è una blockchain emergente nota per la sua struttura modulare e l'assenza di commissioni di transazione (zero-fee). Questo approccio riduce le barriere di accesso per gli utenti e facilita l'adozione di massa. Tuttavia, la mancanza di uno standard per la gestione di account smart avanzati limita la capacità di Koinos di supportare applicazioni complesse che richiedono controlli di accesso sofisticati e flessibilità operativa.
 
-4. **Hook Modules**: Execute additional checks or actions before and after the main operation, such as setting spending limits or logging transactions.
+Veive colma questa lacuna introducendo una struttura modulare ispirata a ERC-7579, che consente la creazione di account personalizzabili con funzionalità avanzate. Integrando lo standard con le peculiarità di Koinos, Veive permette di sfruttare al massimo i vantaggi della blockchain, come l'assenza di commissioni e la modularità, offrendo al contempo una soluzione scalabile e sicura per la gestione degli account. 
 
-### **Account Class Interface**
+Questa combinazione di flessibilità, sicurezza e zero-fee fa di Veive una soluzione unica per la gestione degli account su Koinos, ideale per sviluppatori e utenti alla ricerca di un sistema versatile e potente per la gestione delle criptovalute e delle operazioni blockchain.
 
-The `Account` class provides essential methods for managing operations and interacting with installed modules:
+### **Tipologie di Moduli**
 
-- **install_module**: Installs a module within a specific scope, allowing it to perform its designated function.
-- **uninstall_module**: Removes a module and its associated functionalities.
-- **execute**: Executes a user-initiated operation after pre-checks and post-checks using registered hook modules.
-- **execute_executor**: Specifically handles operations initiated by registered executor modules.
-- **execute_user**: Facilitates direct execution of operations by the user.
-- **is_valid_signature**: Validates the authenticity of signatures using the active signature module.
-- **is_valid_operation**: Checks the validity of an operation by consulting all active validation modules.
-- **authorize**: Ensures that all operations, including "external" ones, are authorized before execution.
+Veive si basa su una struttura modulare che permette di estendere le funzionalità degli account smart su Koinos. I moduli sono suddivisi in quattro categorie principali, ciascuna con un ruolo specifico nell'ecosistema:
 
-### **Key Differences from ERC-7579**
+1. **Moduli di Validazione (mod-validation-as)**
+   - **Descrizione**: Questi moduli verificano l'autenticità e l'autorizzazione delle operazioni. Sono fondamentali per garantire che le operazioni eseguite siano conformi alle regole stabilite dall'utente o dal sistema.
+   - **Funzionamento**: I moduli di validazione controllano le operazioni in base a criteri specifici, come la validità della firma o la conformità a determinate politiche di sicurezza. Ad esempio, un modulo può verificare che una transazione sia firmata correttamente e che l'importo trasferito non superi un certo limite.
 
-#### **Operation-Centric Design**
+2. **Moduli di Esecuzione (mod-execution-as)**
+   - **Descrizione**: Questi moduli sono responsabili dell'esecuzione delle operazioni richieste. Possono eseguire una vasta gamma di azioni, dal trasferimento di token alla chiamata di smart contract specifici.
+   - **Funzionamento**: Una volta che un'operazione è stata validata, i moduli di esecuzione portano a termine l'azione richiesta. Questo può includere l'invio di token, l'interazione con altri contratti intelligenti o l'esecuzione di logiche specifiche per l'applicazione.
 
-Unlike ERC-7579, which does not focus on the detailed concept of "operation," Veive emphasizes this aspect. An operation in Veive is a single action within a transaction, identified by:
+3. **Moduli di Firma (mod-sign-as)**
+   - **Descrizione**: Forniscono metodi alternativi di firma, separati dalla logica di validazione. Questo permette di utilizzare diversi metodi di firma, come ECDSA, WebAuthn, o altri meccanismi di autenticazione.
+   - **Funzionamento**: I moduli di firma vengono invocati per convalidare le firme delle operazioni. A differenza dei moduli di validazione, che si concentrano sull'autorizzazione delle operazioni, i moduli di firma si occupano del metodo di autenticazione utilizzato per firmare le transazioni.
 
-- **contract_id**: The identifier of the smart contract being interacted with.
-- **entry_point**: The specific method being invoked.
-- **args**: The arguments passed to the method.
+4. **Moduli Hooks (mod-hooks-as)**
+   - **Descrizione**: Questi moduli eseguono azioni pre e post operazione, offrendo una maggiore flessibilità nell'implementazione di controlli e logiche aggiuntive.
+   - **Funzionamento**: I moduli hooks possono essere utilizzati per eseguire controlli preliminari, come verifiche aggiuntive di sicurezza, o azioni post-operazione, come la registrazione di eventi o l'aggiornamento di stati interni.
 
-This detailed specification allows for precise control and validation of operations.
+### **Interfaccia della Classe Account**
 
-#### **EntryPoint Concept**
+La classe `Account` fornisce un'interfaccia completa per gestire i moduli e le operazioni. Ecco un riepilogo dei metodi principali:
 
-ERC-7579 includes a centralized "EntryPoint" contract for routing all operations, while Koinos allows operations to be sent directly to smart accounts. This decentralization enhances flexibility but requires a robust system for operation validation.
+- **install_module**: Questo metodo consente di installare un modulo in uno specifico scope. Lo scope rappresenta il contesto in cui il modulo sarà attivo, come specifici entry_point o contract_id. Se non specificato, vengono utilizzati gli scope di default definiti dal modulo stesso.
 
-#### **Operation Validation and `authorize` Method**
+- **uninstall_module**: Rimuove un modulo dal sistema, eliminando tutte le sue associazioni agli scope.
 
-Veive extends operation validation to include not only initial user operations but also "external" operations generated when a contract calls an external contract. This ensures comprehensive validation of all actions, including those that could manipulate transaction outcomes.
+- **execute**: Esegue un'operazione dopo aver effettuato i controlli preliminari (pre-checks) e post-operazione (post-checks) utilizzando i moduli hooks registrati. Questo metodo è utilizzato quando l'operazione è avviata da un utente non identificato come un modulo esecutore.
 
-The `authorize` method is a crucial addition, automatically invoked for every operation requiring validation. It checks if the operation is permitted by consulting relevant validation modules, ensuring secure and authorized execution of all actions.
+- **execute_executor**: Simile a `execute`, ma specifico per i moduli esecutori registrati. Questo metodo garantisce che solo i moduli esecutori possano avviare l'operazione, eseguendo controlli di sicurezza specifici.
 
-### **Contextualization and Module Selection**
+- **execute_user**: Permette l'esecuzione di un'operazione direttamente dall'utente, bypassando i controlli dei moduli esecutori. È utilizzato principalmente per operazioni dirette e non critiche.
 
-Veive uses a "scope" system to manage when and how modules are activated, providing a more flexible and performance-optimized experience compared to ERC-7579. Scopes are categorized into three levels:
+- **is_valid_signature**: Verifica la validità di una firma, utilizzando il modulo di firma attivo. Questo metodo è cruciale per garantire l'autenticità delle transazioni e per prevenire frodi.
 
-- **entry_point + contract_id**: Modules specific to a particular method of a specific contract.
-- **entry_point**: Modules active for a specific method across all contracts.
-- **any**: Modules applicable to any operation.
+- **is_valid_operation**: Verifica la validità di un'operazione, assicurando che tutti i moduli di validazione attivi confermino la conformità dell'operazione alle regole predefinite.
 
-#### **Scope Handling**
+- **authorize**: Un metodo critico che viene chiamato per verificare l'autorizzazione di un'operazione, specialmente quando si tratta di operazioni "external". Questo metodo garantisce che tutte le operazioni, anche quelle interne tra contratti, siano validate correttamente, prevenendo potenziali abusi o operazioni non autorizzate.
 
-- **Validators**: Only one valid module is sought, starting from the most specific scope.
-- **Executor and Hooks**: All relevant modules within the scopes are executed.
-- **Signature Modules**: Only one module can be active at a time, with a default scope.
+
+### Differenze rispetto allo Standard ERC-7579
+
+Il protocollo Veive presenta alcune differenze chiave rispetto allo standard ERC-7579, adattandosi alle specificità della blockchain Koinos e introducendo miglioramenti significativi in termini di sicurezza e flessibilità.
+
+#### Operation
+A differenza dello standard ERC-7579, che non specifica dettagliatamente il concetto di "operation", Veive pone un'enfasi particolare su questo concetto. Un'operazione (operation) in Veive è definita come una singola azione che fa parte di una transazione e viene identificata da:
+
+- **contract_id**: L'identificativo del contratto smart su cui l'operazione è eseguita.
+- **entry_point**: Il metodo specifico del contratto che viene invocato.
+- **args**: Gli argomenti o parametri passati al metodo.
+
+Questo approccio permette un controllo più granulare e preciso delle operazioni. Ad esempio, se un contratto viene chiamato per eseguire un trasferimento di token (koinContract.transfer({amount: 100})), ogni dettaglio dell'operazione viene esaminato per garantire che sia conforme alle regole predefinite.
+
+#### EntryPoint
+Nello standard ERC-7579 esiste un concetto centralizzato chiamato "EntryPoint" da cui passano tutte le operazioni. In Koinos, questo non è presente; le operazioni possono essere inviate direttamente agli smart account senza un punto di controllo centralizzato. Questo offre maggiore flessibilità e rapidità nelle interazioni con gli smart contract, ma richiede un sistema di controllo delle operazioni più robusto per garantire la sicurezza.
+
+#### Controllo delle Operazioni e Metodo `authorize`
+Veive estende il controllo delle operazioni includendo non solo le operazioni iniziali inviate dagli utenti (user_op) ma anche le operazioni "external" generate internamente dai contratti. Questo significa che ogni chiamata, anche interna, viene validata. Ad esempio, se un contratto tenta di manipolare un trasferimento di token all'interno di un'operazione più grande, questa manipolazione viene rilevata e bloccata se non autorizzata.
+
+Il metodo `authorize` è cruciale in questo contesto. Viene chiamato automaticamente per ogni operazione che richiede una validazione, garantendo che tutte le operazioni siano verificate da moduli di validazione adeguati. Questo metodo assicura che anche le operazioni "external" siano soggette a controllo, prevenendo abusi o esecuzioni non autorizzate.
+
+#### Contestualizzazione e Selezione dei Moduli
+In Veive, i moduli vengono selezionati e attivati in base a uno "scope" (contesto) specifico, che determina quando e come un modulo deve essere utilizzato. Questo sistema di scope è più flessibile rispetto allo standard ERC-7579, che non fornisce linee guida specifiche per la selezione dei moduli. Gli scope in Veive sono definiti a tre livelli di specificità:
+
+- **entry_point + contract_id**: Moduli specifici per un metodo di un contratto particolare.
+- **entry_point**: Moduli attivi per un metodo specifico, indipendentemente dal contratto.
+- **any**: Moduli applicabili a qualsiasi operazione.
+
+La gestione degli scope differisce tra i tipi di moduli:
+- **Validatori**: Viene cercato un unico modulo valido, seguendo l'ordine di specificità dal più specifico (entry_point + contract_id) al più generico (any).
+- **Executor e Hooks**: Tutti i moduli pertinenti sono eseguiti se presenti negli scope, garantendo un'esecuzione completa delle operazioni.
+- **Moduli Sign**: Esiste un solo scope di default, permettendo l'installazione di un solo modulo di firma alla volta. Questo approccio garantisce che solo un metodo di firma sia attivo per l'account in un dato momento, semplificando la gestione delle chiavi e dei metodi di autenticazione.
 
 ### **Repository Overview**
 
