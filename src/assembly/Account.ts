@@ -1,4 +1,4 @@
-import { System, authority, Arrays } from "@koinos/sdk-as";
+import { System, authority, Arrays, Base58, StringBytes } from "@koinos/sdk-as";
 import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
 import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
 import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
@@ -76,11 +76,16 @@ export class Account {
       call_args = args.operation!.args!;
     }
 
-    System.call(
+    const call_res = System.call(
       args.operation!.contract_id!,
       args.operation!.entry_point,
       call_args
     );
+
+    if (call_res.code != 0) {
+      const errorMessage = `failed to call ${Base58.encode(args.operation!.contract_id!)}: ${call_res.res.error && call_res.res.error!.message ? call_res.res.error!.message : "unknown error"}`;
+      System.exit(call_res.code, StringBytes.stringToBytes(errorMessage));
+    }
   }
 
   /**
