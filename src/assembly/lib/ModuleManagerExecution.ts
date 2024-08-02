@@ -1,6 +1,6 @@
 import { account } from "../proto/account";
 import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
-import { IModExecution, MODULE_EXECUTION_TYPE_ID, modexecution } from "@veive/mod-execution-as";
+import { IModExecution, MODULE_EXECUTION_TYPE_ID, modexecution } from "@veive-io/mod-execution-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { MODULE_EXECUTION_SPACE_ID } from "../Constants";

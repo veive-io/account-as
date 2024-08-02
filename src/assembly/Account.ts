@@ -1,8 +1,8 @@
 import { System, authority, Arrays, Base58, StringBytes } from "@koinos/sdk-as";
-import { MODULE_HOOKS_TYPE_ID } from "@veive/mod-hooks-as";
-import { MODULE_EXECUTION_TYPE_ID } from "@veive/mod-execution-as";
-import { MODULE_VALIDATION_TYPE_ID } from "@veive/mod-validation-as";
-import { MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
+import { MODULE_HOOKS_TYPE_ID } from "@veive-io/mod-hooks-as";
+import { MODULE_EXECUTION_TYPE_ID } from "@veive-io/mod-execution-as";
+import { MODULE_VALIDATION_TYPE_ID } from "@veive-io/mod-validation-as";
+import { MODULE_SIGN_TYPE_ID } from "@veive-io/mod-sign-as";
 import { account } from "./proto/account";
 import ModuleManagerValidation from "./lib/ModuleManagerValidation";
 import ModuleManagerHooks from "./lib/ModuleManagerHooks";

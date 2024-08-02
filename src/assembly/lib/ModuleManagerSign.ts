@@ -2,7 +2,7 @@ import { MODULE_SIGN_SPACE_ID } from "../Constants";
 import { account } from "../proto/account";
 import IModuleManager from "./IModuleManager";
 import { System, Storage, Base58, Arrays } from "@koinos/sdk-as";
-import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive/mod-sign-as";
+import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive-io/mod-sign-as";
 
 export default class ModuleManagerSign implements IModuleManager {
 

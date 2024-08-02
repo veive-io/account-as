@@ -2,7 +2,7 @@ import { account } from "../proto/account";
 import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
-import { IModHooks, MODULE_HOOKS_TYPE_ID, modhooks } from "@veive/mod-hooks-as";
+import { IModHooks, MODULE_HOOKS_TYPE_ID, modhooks } from "@veive-io/mod-hooks-as";
 import { MODULE_HOOKS_SPACE_ID } from "../Constants";
 
 export default class ModuleManagerHooks implements IModuleManager {

@@ -1,9 +1,9 @@
 {
-  "name": "@veive/account-as",
-  "version": "1.1.0",
+  "name": "@veive-io/account-as",
+  "version": "1.0.0",
   "description": "Veive smart account",
   "author": {
-    "name": "veive",
+    "name": "veive-io",
     "email": "contact@veive.io",
     "url": "https://veive.io"
   },
@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/veiveprotocol/account-as.git"
+    "url": "https://github.com/veive-io/account-as.git"
   },
   "license": "MIT",
   "main": "dist/index.ts",
@@ -30,10 +30,10 @@
     "@koinos/sdk-as": "npm:@koinosbox/sdk-as@1.1.0-alpha.4",
     "@koinosbox/contracts": "^2.1.4",
     "@koinosbox/hdkoinos": "1.0.1",
-    "@veive/mod-execution-as": "^1.0.9",
-    "@veive/mod-hooks-as": "^1.0.10",
-    "@veive/mod-sign-as": "^1.0.3",
-    "@veive/mod-validation-as": "^1.0.18",
+    "@veive-io/mod-execution-as": "^1.0.0",
+    "@veive-io/mod-hooks-as": "^1.0.0",
+    "@veive-io/mod-sign-as": "^1.0.0",
+    "@veive-io/mod-validation-as": "^1.0.0",
     "koilib": "^8.0.0",
     "koinos-precompiler-as": "^1.6.0"
   },

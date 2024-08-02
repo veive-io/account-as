@@ -2,7 +2,7 @@ import { account } from "../proto/account";
 import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
-import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive/mod-validation-as";
+import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive-io/mod-validation-as";
 import { MODULE_VALIDATION_SPACE_ID } from "../Constants";
 
 export default class ModuleManagerValidation implements IModuleManager {

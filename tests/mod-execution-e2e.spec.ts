@@ -4,7 +4,7 @@ import path from "path";
 import { randomBytes } from "crypto";
 import { beforeAll, afterAll, it, expect } from "@jest/globals";
 import * as dotenv from "dotenv";
-import * as modAbi from "@veive/mod-execution-as/dist/modexecution-abi.json";
+import * as modAbi from "@veive-io/mod-execution-as/dist/modexecution-abi.json";
 import * as accountAbi from "../build/account-abi.json";
 
 dotenv.config();
@@ -44,7 +44,7 @@ beforeAll(async () => {
     // deploy mod contract
     await localKoinos.deployContract(
         modSign.getPrivateKey("wif"),
-        path.join(__dirname, "../node_modules/@veive/mod-execution-as/dist/release/ModExecution.wasm"),
+        path.join(__dirname, "../node_modules/@veive-io/mod-execution-as/dist/release/ModExecution.wasm"),
         modAbi
     );
 
