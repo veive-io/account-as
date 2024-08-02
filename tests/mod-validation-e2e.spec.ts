@@ -156,7 +156,7 @@ it("trigger module is_valid_operation", async () => {
         provider
     });
 
-    const { operation: exec } = await accountContract["execute"]({
+    const { operation: exec } = await accountContract["execute_user"]({
         operation: {
             contract_id: test.call_contract.contract_id,
             entry_point: test.call_contract.entry_point
