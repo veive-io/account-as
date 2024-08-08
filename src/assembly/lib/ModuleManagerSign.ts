@@ -29,7 +29,7 @@ export default class ModuleManagerSign implements IModuleManager {
 
         System.require(manifest.type_id == MODULE_SIGN_TYPE_ID, "[account] wrong module_type_id");
 
-        const modules = new account.module_sign();
+        const modules = this.storage.get() || new account.module_sign();
         if (ArrayBytes.includes(modules.value, contract_id) == false) {
             modules.value.push(contract_id);
         }
