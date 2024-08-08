@@ -101,5 +101,5 @@ message modules_execution {
 }
 
 message module_sign {
-    bytes value = 1 [(koinos.btype) = ADDRESS];
+    repeated bytes value = 1 [(koinos.btype) = ADDRESS];
 }

@@ -932,9 +932,11 @@ export namespace account {
   export class module_sign {
     static encode(message: module_sign, writer: Writer): void {
       const unique_name_value = message.value;
-      if (unique_name_value !== null) {
-        writer.uint32(10);
-        writer.bytes(unique_name_value);
+      if (unique_name_value.length !== 0) {
+        for (let i = 0; i < unique_name_value.length; ++i) {
+          writer.uint32(10);
+          writer.bytes(unique_name_value[i]);
+        }
       }
     }
 
@@ -946,7 +948,7 @@ export namespace account {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.value = reader.bytes();
+            message.value.push(reader.bytes());
             break;
 
           default:
@@ -958,9 +960,9 @@ export namespace account {
       return message;
     }
 
-    value: Uint8Array | null;
+    value: Array<Uint8Array>;
 
-    constructor(value: Uint8Array | null = null) {
+    constructor(value: Array<Uint8Array> = []) {
       this.value = value;
     }
   }

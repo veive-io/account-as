@@ -3,6 +3,7 @@ import { account } from "../proto/account";
 import IModuleManager from "./IModuleManager";
 import { System, Storage, Base58, Arrays } from "@koinos/sdk-as";
 import { modsign, IModSign, MODULE_SIGN_TYPE_ID } from "@veive-io/mod-sign-as";
+import { ArrayBytes } from "./utils";
 
 export default class ModuleManagerSign implements IModuleManager {
 
@@ -28,8 +29,12 @@ export default class ModuleManagerSign implements IModuleManager {
 
         System.require(manifest.type_id == MODULE_SIGN_TYPE_ID, "[account] wrong module_type_id");
 
-        const module = new account.module_sign(contract_id);
-        this.storage.put(module);
+        const modules = new account.module_sign();
+        if (ArrayBytes.includes(modules.value, contract_id) == false) {
+            modules.value.push(contract_id);
+        }
+
+        this.storage.put(modules);
         module_interface.on_install(new modsign.on_install_args(data));
     }
 
@@ -39,27 +44,25 @@ export default class ModuleManagerSign implements IModuleManager {
 
         System.require(module.type_id == MODULE_SIGN_TYPE_ID, "[account] wrong module_type_id");
 
-        this.storage.remove();
+        const modules = this.storage.get() || new account.module_sign();
+        const new_modules = new account.module_sign();
+
+        if (ArrayBytes.includes(modules.value, contract_id) == true) {
+            new_modules.value = ArrayBytes.remove(modules.value, contract_id);
+        }
+        
+        this.storage.put(new_modules);
         module_interface.on_uninstall(new modsign.on_uninstall_args(data));
     }
 
     get_modules(): Uint8Array[] {
-        const result : Uint8Array[] = [];
-        const module = this.storage.get();
-        if (module && module.value) {
-            result.push(module.value!);
-        }
-
-        return result;
+        const modules = this.storage.get() || new account.module_sign();
+        return modules.value;
     }
 
     is_module_installed(contract_id: Uint8Array): boolean {
-        const module = this.storage.get();
-        if (module && module.value && Arrays.equal(module.value, contract_id)) {
-            return true;
-        }
-
-        return false;
+        const modules = this.storage.get() || new account.module_sign();
+        return ArrayBytes.includes(modules.value, contract_id) == true;
     }
 
     /**
@@ -71,13 +74,15 @@ export default class ModuleManagerSign implements IModuleManager {
      * @returns `true` if any sign module validates the signature successfully, otherwise `false`.
      */
     validate_signature(sender: Uint8Array, signature: Uint8Array, tx_id: Uint8Array): boolean {
-        const module = this.storage.get();
+        const modules = this.storage.get() || new account.module_sign();
 
-        if (module && module.value) {
-            System.log(`[account] selected sign ${Base58.encode(module.value!)}`);
+        for (let i = 0; i < modules.value.length; i++) {
+            const module = modules.value[i];
+
+            System.log(`[account] selected sign ${Base58.encode(module)}`);
 
             const caller = System.getCaller().caller;
-            if (caller && caller.length > 0 && Arrays.equal(caller, module.value)) {
+            if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
                 System.log(`[account] sign same caller ${Base58.encode(caller)}`)
                 return false;
             }
@@ -87,7 +92,7 @@ export default class ModuleManagerSign implements IModuleManager {
             args.signature = signature;
             args.tx_id = tx_id;
             
-            const module_interface = new IModSign(module.value!);
+            const module_interface = new IModSign(module);
             const res = module_interface.is_valid_signature(args);
     
             if (res.value == true) {
