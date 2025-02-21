@@ -45,13 +45,27 @@ export default class ModuleManagerSign implements IModuleManager {
         System.require(module.type_id == MODULE_SIGN_TYPE_ID, "[account] wrong module_type_id");
 
         const modules = this.storage.get() || new account.module_sign();
-        const new_modules = new account.module_sign();
 
-        if (ArrayBytes.includes(modules.value, contract_id) == true) {
-            new_modules.value = ArrayBytes.remove(modules.value, contract_id);
+        System.log(`prima ${modules.value.length}`);
+        System.log(`a ${modules.value[0]}`);
+        System.log(`b ${modules.value[1]}`);
+        System.log(`contractid ${Arrays.toHexString(contract_id)}`);
+
+        let indexToRemove = -1;
+        for (let i = 0; i < modules.value.length; i++) {
+            if (Arrays.equal(modules.value[i], contract_id)) {
+                indexToRemove = i;
+                break;
+            }
+        }
+
+        if (indexToRemove != -1) {
+            modules.value.splice(indexToRemove, 1);
+            System.log(`dopo ${modules.value.length}`);
+            System.log(`a ${modules.value[0]}`);
+            this.storage.put(modules);
         }
         
-        this.storage.put(new_modules);
         module_interface.on_uninstall(new modsign.on_uninstall_args(data));
     }
 

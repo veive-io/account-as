@@ -138,7 +138,6 @@ it("install module", async () => {
     expect(receipt.logs).toContain("[mod-sign] called module install");
 
     const { result } = await accountContract["get_modules"]();
-    //expect(result.value).toStrictEqual([modSign1.address]);
     expect(result.value.length).toStrictEqual(2);
 });
 
@@ -174,6 +173,7 @@ it("trigger module is_valid_signature", async () => {
     expect(receipt.logs).toContain("[mod-sign] is_valid_signature called");
     expect(receipt.logs).toContain(`[account] selected sign ${modSign1.address}`);
 });
+*/
 
 it("uninstall module", async () => {
     const { operation: uninstall_module } = await accountContract["uninstall_module"]({
@@ -201,7 +201,21 @@ it("uninstall module", async () => {
     expect(receipt).toBeDefined();
     expect(receipt.logs).toContain("[mod-sign] called module uninstall");
 
-    const { result } = await accountContract["get_modules"]();
-    expect(result).toBeUndefined();
+    console.log(receipt);
+
+    const { result: r1 } = await accountContract["get_modules"]();
+    expect(r1!.value).toBeDefined();
+    expect(r1.value.length).toStrictEqual(1);
+
+    const { result: r2 } = await accountContract["is_module_installed"]({
+        module_type_id: 3,
+        contract_id: modSign2.address
+    });
+    expect(r2!.value).toStrictEqual(true);
+
+    const { result: r3 } = await accountContract["is_module_installed"]({
+        module_type_id: 3,
+        contract_id: modSign1.address
+    });
+    expect(r3).toBeUndefined();
 });
-*/
