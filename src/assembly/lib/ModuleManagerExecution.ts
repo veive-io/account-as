@@ -102,7 +102,7 @@ export default class ModuleManagerExecution implements IModuleManager {
      * 
      * @param operation The operation to be executed.
      */
-    execute(operation: account.operation): void {
+    execute(operation: account.call_operation): void {
         const modules = this._get_modules_by_operation(operation);
         let called_modules = 0;
 
@@ -152,7 +152,7 @@ export default class ModuleManagerExecution implements IModuleManager {
         return result;
     }
 
-    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
+    _get_scope_by_operation_level(operation: account.call_operation, level: u32): Uint8Array {
         let scope = this.default_scope;
 
         if (level == 3) {
@@ -165,7 +165,7 @@ export default class ModuleManagerExecution implements IModuleManager {
         return Protobuf.encode<modexecution.scope>(scope, modexecution.scope.encode);
     }
 
-    _get_modules_by_operation(operation: account.operation): Uint8Array[] {
+    _get_modules_by_operation(operation: account.call_operation): Uint8Array[] {
         const result: Uint8Array[] = [];
 
         const level3_scope = this._get_scope_by_operation_level(operation, 3);

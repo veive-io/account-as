@@ -113,7 +113,7 @@ export default class ModuleManagerHooks implements IModuleManager {
         return result;
     }
 
-    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
+    _get_scope_by_operation_level(operation: account.call_operation, level: u32): Uint8Array {
         let scope = this.default_scope;
 
         if (level == 3) {
@@ -126,7 +126,7 @@ export default class ModuleManagerHooks implements IModuleManager {
         return Protobuf.encode<modhooks.scope>(scope, modhooks.scope.encode);
     }
 
-    _get_modules_by_operation(operation: account.operation): Uint8Array[] {
+    _get_modules_by_operation(operation: account.call_operation): Uint8Array[] {
         const result: Uint8Array[] = [];
 
         const level3_scope = this._get_scope_by_operation_level(operation, 3);
@@ -162,7 +162,7 @@ export default class ModuleManagerHooks implements IModuleManager {
      * @param operation The operation to be pre-checked.
      * @returns An array of pre-check data returned by each hook module.
      */
-    pre_check(operation: account.operation): Uint8Array[] {
+    pre_check(operation: account.call_operation): Uint8Array[] {
         const modules = this.get_modules();
         const data: Uint8Array[] = [];
 
