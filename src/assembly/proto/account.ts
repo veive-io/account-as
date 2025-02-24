@@ -24,8 +24,8 @@ export namespace account {
     constructor() {}
   }
 
-  export class operation {
-    static encode(message: operation, writer: Writer): void {
+  export class call_contract_operation {
+    static encode(message: call_contract_operation, writer: Writer): void {
       const unique_name_contract_id = message.contract_id;
       if (unique_name_contract_id !== null) {
         writer.uint32(10);
@@ -44,9 +44,9 @@ export namespace account {
       }
     }
 
-    static decode(reader: Reader, length: i32): operation {
+    static decode(reader: Reader, length: i32): call_contract_operation {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new operation();
+      const message = new call_contract_operation();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
@@ -84,6 +84,491 @@ export namespace account {
       this.contract_id = contract_id;
       this.entry_point = entry_point;
       this.args = args;
+    }
+  }
+
+  export class upload_contract_operation {
+    static encode(message: upload_contract_operation, writer: Writer): void {
+      const unique_name_contract_id = message.contract_id;
+      if (unique_name_contract_id !== null) {
+        writer.uint32(10);
+        writer.bytes(unique_name_contract_id);
+      }
+
+      const unique_name_bytecode = message.bytecode;
+      if (unique_name_bytecode !== null) {
+        writer.uint32(18);
+        writer.bytes(unique_name_bytecode);
+      }
+
+      const unique_name_abi = message.abi;
+      if (unique_name_abi !== null) {
+        writer.uint32(26);
+        writer.string(unique_name_abi);
+      }
+
+      if (message.authorizes_call_contract != false) {
+        writer.uint32(32);
+        writer.bool(message.authorizes_call_contract);
+      }
+
+      if (message.authorizes_transaction_application != false) {
+        writer.uint32(40);
+        writer.bool(message.authorizes_transaction_application);
+      }
+
+      if (message.authorizes_upload_contract != false) {
+        writer.uint32(48);
+        writer.bool(message.authorizes_upload_contract);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): upload_contract_operation {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new upload_contract_operation();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 2:
+            message.bytecode = reader.bytes();
+            break;
+
+          case 3:
+            message.abi = reader.string();
+            break;
+
+          case 4:
+            message.authorizes_call_contract = reader.bool();
+            break;
+
+          case 5:
+            message.authorizes_transaction_application = reader.bool();
+            break;
+
+          case 6:
+            message.authorizes_upload_contract = reader.bool();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    contract_id: Uint8Array | null;
+    bytecode: Uint8Array | null;
+    abi: string | null;
+    authorizes_call_contract: bool;
+    authorizes_transaction_application: bool;
+    authorizes_upload_contract: bool;
+
+    constructor(
+      contract_id: Uint8Array | null = null,
+      bytecode: Uint8Array | null = null,
+      abi: string | null = null,
+      authorizes_call_contract: bool = false,
+      authorizes_transaction_application: bool = false,
+      authorizes_upload_contract: bool = false
+    ) {
+      this.contract_id = contract_id;
+      this.bytecode = bytecode;
+      this.abi = abi;
+      this.authorizes_call_contract = authorizes_call_contract;
+      this.authorizes_transaction_application =
+        authorizes_transaction_application;
+      this.authorizes_upload_contract = authorizes_upload_contract;
+    }
+  }
+
+  export class set_system_contract_operation {
+    static encode(
+      message: set_system_contract_operation,
+      writer: Writer
+    ): void {
+      const unique_name_contract_id = message.contract_id;
+      if (unique_name_contract_id !== null) {
+        writer.uint32(10);
+        writer.bytes(unique_name_contract_id);
+      }
+
+      if (message.system_contract != false) {
+        writer.uint32(16);
+        writer.bool(message.system_contract);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): set_system_contract_operation {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new set_system_contract_operation();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 2:
+            message.system_contract = reader.bool();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    contract_id: Uint8Array | null;
+    system_contract: bool;
+
+    constructor(
+      contract_id: Uint8Array | null = null,
+      system_contract: bool = false
+    ) {
+      this.contract_id = contract_id;
+      this.system_contract = system_contract;
+    }
+  }
+
+  export class contract_call_bundle {
+    static encode(message: contract_call_bundle, writer: Writer): void {
+      const unique_name_contract_id = message.contract_id;
+      if (unique_name_contract_id !== null) {
+        writer.uint32(10);
+        writer.bytes(unique_name_contract_id);
+      }
+
+      if (message.entry_point != 0) {
+        writer.uint32(16);
+        writer.uint32(message.entry_point);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): contract_call_bundle {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new contract_call_bundle();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.contract_id = reader.bytes();
+            break;
+
+          case 2:
+            message.entry_point = reader.uint32();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    contract_id: Uint8Array | null;
+    entry_point: u32;
+
+    constructor(contract_id: Uint8Array | null = null, entry_point: u32 = 0) {
+      this.contract_id = contract_id;
+      this.entry_point = entry_point;
+    }
+  }
+
+  @unmanaged
+  export class think_id_nested {
+    static encode(message: think_id_nested, writer: Writer): void {
+      if (message.thunk_id != 0) {
+        writer.uint32(8);
+        writer.uint32(message.thunk_id);
+      }
+    }
+
+    static decode(reader: Reader, length: i32): think_id_nested {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new think_id_nested();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.thunk_id = reader.uint32();
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    thunk_id: u32;
+
+    constructor(thunk_id: u32 = 0) {
+      this.thunk_id = thunk_id;
+    }
+  }
+
+  export class contract_call_bundle_nested {
+    static encode(message: contract_call_bundle_nested, writer: Writer): void {
+      const unique_name_system_call_bundle = message.system_call_bundle;
+      if (unique_name_system_call_bundle !== null) {
+        writer.uint32(10);
+        writer.fork();
+        contract_call_bundle.encode(unique_name_system_call_bundle, writer);
+        writer.ldelim();
+      }
+    }
+
+    static decode(reader: Reader, length: i32): contract_call_bundle_nested {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new contract_call_bundle_nested();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.system_call_bundle = contract_call_bundle.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    system_call_bundle: contract_call_bundle | null;
+
+    constructor(system_call_bundle: contract_call_bundle | null = null) {
+      this.system_call_bundle = system_call_bundle;
+    }
+  }
+
+  export class system_call_target {
+    static encode(message: system_call_target, writer: Writer): void {
+      const unique_name_thunk = message.thunk;
+      if (unique_name_thunk !== null) {
+        writer.uint32(10);
+        writer.fork();
+        think_id_nested.encode(unique_name_thunk, writer);
+        writer.ldelim();
+      }
+
+      const unique_name_contract = message.contract;
+      if (unique_name_contract !== null) {
+        writer.uint32(18);
+        writer.fork();
+        contract_call_bundle_nested.encode(unique_name_contract, writer);
+        writer.ldelim();
+      }
+    }
+
+    static decode(reader: Reader, length: i32): system_call_target {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new system_call_target();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.thunk = think_id_nested.decode(reader, reader.uint32());
+            break;
+
+          case 2:
+            message.contract = contract_call_bundle_nested.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    thunk: think_id_nested | null;
+    contract: contract_call_bundle_nested | null;
+
+    constructor(
+      thunk: think_id_nested | null = null,
+      contract: contract_call_bundle_nested | null = null
+    ) {
+      this.thunk = thunk;
+      this.contract = contract;
+    }
+  }
+
+  export class set_system_call_operation {
+    static encode(message: set_system_call_operation, writer: Writer): void {
+      if (message.call_id != 0) {
+        writer.uint32(8);
+        writer.uint32(message.call_id);
+      }
+
+      const unique_name_target = message.target;
+      if (unique_name_target !== null) {
+        writer.uint32(18);
+        writer.fork();
+        system_call_target.encode(unique_name_target, writer);
+        writer.ldelim();
+      }
+    }
+
+    static decode(reader: Reader, length: i32): set_system_call_operation {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new set_system_call_operation();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.call_id = reader.uint32();
+            break;
+
+          case 2:
+            message.target = system_call_target.decode(reader, reader.uint32());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    call_id: u32;
+    target: system_call_target | null;
+
+    constructor(call_id: u32 = 0, target: system_call_target | null = null) {
+      this.call_id = call_id;
+      this.target = target;
+    }
+  }
+
+  export class operation {
+    static encode(message: operation, writer: Writer): void {
+      const unique_name_call_contract = message.call_contract;
+      if (unique_name_call_contract !== null) {
+        writer.uint32(10);
+        writer.fork();
+        call_contract_operation.encode(unique_name_call_contract, writer);
+        writer.ldelim();
+      }
+
+      const unique_name_upload_contract = message.upload_contract;
+      if (unique_name_upload_contract !== null) {
+        writer.uint32(18);
+        writer.fork();
+        upload_contract_operation.encode(unique_name_upload_contract, writer);
+        writer.ldelim();
+      }
+
+      const unique_name_set_system_call = message.set_system_call;
+      if (unique_name_set_system_call !== null) {
+        writer.uint32(26);
+        writer.fork();
+        set_system_call_operation.encode(unique_name_set_system_call, writer);
+        writer.ldelim();
+      }
+
+      const unique_name_set_system_contract = message.set_system_contract;
+      if (unique_name_set_system_contract !== null) {
+        writer.uint32(34);
+        writer.fork();
+        set_system_contract_operation.encode(
+          unique_name_set_system_contract,
+          writer
+        );
+        writer.ldelim();
+      }
+    }
+
+    static decode(reader: Reader, length: i32): operation {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new operation();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.call_contract = call_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          case 2:
+            message.upload_contract = upload_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          case 3:
+            message.set_system_call = set_system_call_operation.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          case 4:
+            message.set_system_contract = set_system_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    call_contract: call_contract_operation | null;
+    upload_contract: upload_contract_operation | null;
+    set_system_call: set_system_call_operation | null;
+    set_system_contract: set_system_contract_operation | null;
+
+    constructor(
+      call_contract: call_contract_operation | null = null,
+      upload_contract: upload_contract_operation | null = null,
+      set_system_call: set_system_call_operation | null = null,
+      set_system_contract: set_system_contract_operation | null = null
+    ) {
+      this.call_contract = call_contract;
+      this.upload_contract = upload_contract;
+      this.set_system_call = set_system_call;
+      this.set_system_contract = set_system_contract;
     }
   }
 

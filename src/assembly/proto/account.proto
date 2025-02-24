@@ -8,10 +8,58 @@ message mod {
     
 }
 
-message operation {
-    bytes contract_id = 1 [(koinos.btype) = ADDRESS];
+message call_contract_operation {
+    bytes contract_id = 1;
     uint32 entry_point = 2;
     bytes args = 3;
+}
+
+message upload_contract_operation {
+    bytes contract_id = 1;
+    bytes bytecode = 2;
+    string abi = 3;
+    bool authorizes_call_contract = 4;
+    bool authorizes_transaction_application = 5;
+    bool authorizes_upload_contract = 6;
+}
+
+message set_system_contract_operation {
+    bytes contract_id = 1;
+    bool system_contract = 2;
+}
+
+message contract_call_bundle {
+  bytes contract_id = 1;
+  uint32 entry_point = 2;
+}
+
+message think_id_nested {
+  uint32 thunk_id = 1;
+}
+
+message contract_call_bundle_nested {
+    contract_call_bundle system_call_bundle = 1;
+}
+
+message system_call_target {
+  oneof target {
+    think_id_nested thunk = 1;
+    contract_call_bundle_nested contract = 2;
+  }
+}
+
+message set_system_call_operation {
+  uint32 call_id = 1;
+  system_call_target target = 2;
+}
+
+message operation {
+  oneof operation {
+    call_contract_operation call_contract = 1;
+    upload_contract_operation upload_contract = 2;
+    set_system_call_operation set_system_call = 3;
+    set_system_contract_operation set_system_contract = 4;
+  }
 }
 
 message execute_args {

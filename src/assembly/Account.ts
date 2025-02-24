@@ -28,11 +28,17 @@ export class Account {
     this._require_not_self();
     this._require_not_executor();
 
+    if (!args.operation!.call_contract) {
+      System.exit(0, StringBytes.stringToBytes('unsupported op'));
+    }
+
+    const operation = args.operation!.call_contract as account.call_contract_operation;
+
     const module_manager_hooks = new ModuleManagerHooks(this.contractId);
-    const data = module_manager_hooks.pre_check(args.operation!);
+    const data = module_manager_hooks.pre_check(operation);
 
     const module_manager_execution = new ModuleManagerExecution(this.contractId);
-    module_manager_execution.execute(args.operation!);
+    module_manager_execution.execute(operation);
 
     module_manager_hooks.post_check(data);
   }
@@ -51,11 +57,17 @@ export class Account {
     this._require_not_self();
     this._require_only_executor();
 
+    if (!args.operation!.call_contract) {
+      System.exit(0, StringBytes.stringToBytes('unsupported op'));
+    }
+
+    const operation = args.operation!.call_contract as account.call_contract_operation;
+
     const module_manager_hooks = new ModuleManagerHooks(this.contractId);
-    const data = module_manager_hooks.pre_check(args.operation!);
+    const data = module_manager_hooks.pre_check(operation);
 
     const module_manager_execution = new ModuleManagerExecution(this.contractId);
-    module_manager_execution.execute(args.operation!);
+    module_manager_execution.execute(operation);
 
     module_manager_hooks.post_check(data);
   }
@@ -71,19 +83,25 @@ export class Account {
     this._require_valid_operation(args.operation!);
     this._require_not_caller();
 
+    if (!args.operation!.call_contract) {
+      System.exit(0, StringBytes.stringToBytes('unsupported op'));
+    }
+
+    const operation = args.operation!.call_contract as account.call_contract_operation;
+
     let call_args = new Uint8Array(0);
-    if (args.operation!.args && args.operation!.args!.length > 0) {
-      call_args = args.operation!.args!;
+    if (operation.args && operation.args!.length > 0) {
+      call_args = operation.args!;
     }
 
     const call_res = System.call(
-      args.operation!.contract_id!,
-      args.operation!.entry_point,
+      operation.contract_id!,
+      operation.entry_point,
       call_args
     );
 
     if (call_res.code != 0) {
-      const errorMessage = `failed to call ${Base58.encode(args.operation!.contract_id!)}: ${call_res.res.error && call_res.res.error!.message ? call_res.res.error!.message : "unknown error"}`;
+      const errorMessage = `failed to call ${Base58.encode(operation.contract_id!)}: ${call_res.res.error && call_res.res.error!.message ? call_res.res.error!.message : "unknown error"}`;
       System.exit(call_res.code, StringBytes.stringToBytes(errorMessage));
     }
   }
@@ -313,22 +331,30 @@ export class Account {
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
     const result = new authority.authorize_result(false);
+    const operation = new account.operation();
 
     if (args.type == authority.authorization_type.contract_call) {
       System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
+      operation.call_contract = new account.call_contract_operation();
+      operation.call_contract.contract_id = args.call!.contract_id;
+      operation.call_contract.entry_point = args.call!.entry_point;
+      operation.call_contract.args = args.call!.data;
+    }
 
-      const operation = new account.operation();
-      operation.contract_id = args.call!.contract_id;
-      operation.entry_point = args.call!.entry_point;
-      operation.args = args.call!.data;
+    else if (args.type == authority.authorization_type.contract_upload) {
+      operation.upload_contract = new account.upload_contract_operation();
+    }
 
-      result.value = this.is_valid_operation(new account.is_valid_operation_args(operation)).value;
+    else if (args.type == authority.authorization_type.transaction_application) {
+      //ToDo
+    }
 
-      if (result.value == true) {
-        System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
-      } else {
-        System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
-      }
+    const module_manager = new ModuleManagerValidation(this.contractId);
+    result.value = module_manager.validate_operation(operation);
+    if (result.value == true) {
+      System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
+    } else {
+      System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
     }
 
     return result;
