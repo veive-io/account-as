@@ -489,25 +489,6 @@ export namespace account {
         upload_contract_operation.encode(unique_name_upload_contract, writer);
         writer.ldelim();
       }
-
-      const unique_name_set_system_call = message.set_system_call;
-      if (unique_name_set_system_call !== null) {
-        writer.uint32(26);
-        writer.fork();
-        set_system_call_operation.encode(unique_name_set_system_call, writer);
-        writer.ldelim();
-      }
-
-      const unique_name_set_system_contract = message.set_system_contract;
-      if (unique_name_set_system_contract !== null) {
-        writer.uint32(34);
-        writer.fork();
-        set_system_contract_operation.encode(
-          unique_name_set_system_contract,
-          writer
-        );
-        writer.ldelim();
-      }
     }
 
     static decode(reader: Reader, length: i32): operation {
@@ -531,20 +512,6 @@ export namespace account {
             );
             break;
 
-          case 3:
-            message.set_system_call = set_system_call_operation.decode(
-              reader,
-              reader.uint32()
-            );
-            break;
-
-          case 4:
-            message.set_system_contract = set_system_contract_operation.decode(
-              reader,
-              reader.uint32()
-            );
-            break;
-
           default:
             reader.skipType(tag & 7);
             break;
@@ -556,19 +523,13 @@ export namespace account {
 
     call_contract: call_contract_operation | null;
     upload_contract: upload_contract_operation | null;
-    set_system_call: set_system_call_operation | null;
-    set_system_contract: set_system_contract_operation | null;
 
     constructor(
       call_contract: call_contract_operation | null = null,
-      upload_contract: upload_contract_operation | null = null,
-      set_system_call: set_system_call_operation | null = null,
-      set_system_contract: set_system_contract_operation | null = null
+      upload_contract: upload_contract_operation | null = null
     ) {
       this.call_contract = call_contract;
       this.upload_contract = upload_contract;
-      this.set_system_call = set_system_call;
-      this.set_system_contract = set_system_contract;
     }
   }
 

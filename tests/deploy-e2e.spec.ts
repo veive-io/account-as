@@ -45,7 +45,13 @@ beforeAll(async () => {
     await localKoinos.deployContract(
         modSign.getPrivateKey("wif"),
         path.join(__dirname, "../node_modules/@veive-io/mod-validation-as/dist/release/ModValidation.wasm"),
-        modAbi
+        modAbi,
+        {},
+        {
+            authorizesCallContract: true,
+            authorizesTransactionApplication: false,
+            authorizesUploadContract: false,
+        }
     );
 
     // deploy account contract

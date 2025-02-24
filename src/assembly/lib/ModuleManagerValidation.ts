@@ -23,10 +23,6 @@ export default class ModuleManagerValidation implements IModuleManager {
         );
     }
 
-    get default_scope(): modvalidation.scope {
-        return new modvalidation.scope(1);
-    }
-
     install_module(
         contract_id: Uint8Array,
         scopes: Uint8Array[],
@@ -101,8 +97,12 @@ export default class ModuleManagerValidation implements IModuleManager {
         return result;
     }
 
-    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
-        let scope = this.default_scope;
+    _get_module_by_scope(scope: modvalidation.scope) : Uint8Array {
+        return Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
+    }
+
+    _get_scope_by_operation_level(operation: account.call_contract_operation, level: u32): Uint8Array {
+        let scope = new modvalidation.scope(1);
 
         if (level == 3) {
             scope = new modvalidation.scope(operation.entry_point, operation.contract_id);
@@ -111,10 +111,10 @@ export default class ModuleManagerValidation implements IModuleManager {
             scope = new modvalidation.scope(operation.entry_point);
         }
 
-        return Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
+        return this._get_module_by_scope(scope);
     }
 
-    _get_module_by_operation(operation: account.operation): Uint8Array|null {
+    _get_module_by_call_operation(operation: account.call_contract_operation): Uint8Array|null {
         const level3_scope = this._get_scope_by_operation_level(operation, 3);
         const level3_module = this.storage.get(level3_scope);
         if (level3_module && level3_module.value) {
@@ -136,6 +136,64 @@ export default class ModuleManagerValidation implements IModuleManager {
         return null;
     }
 
+    _get_module_by_operation(operation: account.operation) : Uint8Array|null {
+        if (operation.call_contract!) {
+            return this._get_module_by_call_operation(operation.call_contract!);
+        }
+        else if (operation.upload_contract!) {
+            return this._get_module_by_scope(new modvalidation.scope(2));
+        }
+        /*else if (operation.set_system_call!) {
+            return this._get_module_by_scope(new modvalidation.scope(3));
+        }
+        else if (operation.set_system_contract!) {
+            return this._get_module_by_scope(new modvalidation.scope(4));
+        }*/
+        
+        return null;
+    }
+
+    _prepare_operation(operation: account.operation) : modvalidation.operation {
+        const op = new modvalidation.operation();
+
+        if (operation.call_contract!) {
+            op.call_contract = new modvalidation.call_contract_operation();
+            op.call_contract!.args = operation.call_contract!.args;
+            op.call_contract!.contract_id = operation.call_contract!.contract_id;
+            op.call_contract!.entry_point = operation.call_contract!.entry_point;
+        }
+        else if (operation.upload_contract!) {
+            op.upload_contract = new modvalidation.upload_contract_operation();
+            op.upload_contract!.abi = operation.upload_contract!.abi;
+            op.upload_contract!.authorizes_call_contract = operation.upload_contract!.authorizes_call_contract;
+            op.upload_contract!.authorizes_transaction_application = operation.upload_contract!.authorizes_transaction_application;
+            op.upload_contract!.authorizes_upload_contract = operation.upload_contract!.authorizes_upload_contract;
+            op.upload_contract!.contract_id = operation.upload_contract!.contract_id;
+        }
+        /*else if (operation.set_system_call!) {
+            op.set_system_call = new modvalidation.set_system_call_operation();
+            op.set_system_call!.call_id = operation.set_system_call!.call_id;
+
+            if (operation.set_system_call!.target!.thunk) {
+                op.set_system_call!.target!.thunk = new modvalidation.think_id_nested();
+                op.set_system_call!.target!.thunk!.thunk_id = operation.set_system_call!.target!.thunk!.thunk_id;
+            }
+            else if (operation.set_system_call!.target!.contract) {
+                op.set_system_call!.target!.contract = new modvalidation.contract_call_bundle_nested();
+                op.set_system_call!.target!.contract!.system_call_bundle = new modvalidation.contract_call_bundle();
+                op.set_system_call!.target!.contract!.system_call_bundle!.contract_id = operation.set_system_call!.target!.contract!.system_call_bundle!.contract_id;
+                op.set_system_call!.target!.contract!.system_call_bundle!.entry_point = operation.set_system_call!.target!.contract!.system_call_bundle!.entry_point;
+            }
+        }
+        else if (operation.set_system_contract!) {
+            op.set_system_contract = new modvalidation.set_system_contract_operation();
+            op.set_system_contract!.contract_id = operation.set_system_contract!.contract_id;
+            op.set_system_contract!.system_contract = operation.set_system_contract!.system_contract;
+        }*/
+        
+        return op;
+    }
+
     validate_operation(operation: account.operation): boolean {
         const module = this._get_module_by_operation(operation);
         if (module != null) {
@@ -146,12 +204,8 @@ export default class ModuleManagerValidation implements IModuleManager {
                 System.log(`[account] validation same caller ${Base58.encode(caller)}`)
                 return false;
             }
-
-            const op = new modvalidation.operation();
-            op.contract_id = operation.contract_id;
-            op.entry_point = operation.entry_point;
-            op.args = operation.args;
-
+            
+            const op = this._prepare_operation(operation);
             const args = new modvalidation.is_valid_operation_args(op);
             const module_interface = new IModValidation(module);
             const res = module_interface.is_valid_operation(args);

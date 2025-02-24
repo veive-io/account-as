@@ -331,26 +331,10 @@ export class Account {
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
     const result = new authority.authorize_result(false);
-    const operation = new account.operation();
+    const operation = new account.call_contract_operation();
 
-    if (args.type == authority.authorization_type.contract_call) {
-      System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
-      operation.call_contract = new account.call_contract_operation();
-      operation.call_contract.contract_id = args.call!.contract_id;
-      operation.call_contract.entry_point = args.call!.entry_point;
-      operation.call_contract.args = args.call!.data;
-    }
-
-    else if (args.type == authority.authorization_type.contract_upload) {
-      operation.upload_contract = new account.upload_contract_operation();
-    }
-
-    else if (args.type == authority.authorization_type.transaction_application) {
-      //ToDo
-    }
-
-    const module_manager = new ModuleManagerValidation(this.contractId);
-    result.value = module_manager.validate_operation(operation);
+    //const module_manager = new ModuleManagerValidation(this.contractId);
+    //result.value = module_manager.validate_operation(operation);
     if (result.value == true) {
       System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
     } else {

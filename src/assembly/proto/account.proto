@@ -57,8 +57,6 @@ message operation {
   oneof operation {
     call_contract_operation call_contract = 1;
     upload_contract_operation upload_contract = 2;
-    set_system_call_operation set_system_call = 3;
-    set_system_contract_operation set_system_contract = 4;
   }
 }
 
