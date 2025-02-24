@@ -1,5 +1,5 @@
 import { account } from "../proto/account";
-import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
+import { Arrays, System, Storage, Protobuf, Base58, authority } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive-io/mod-validation-as";
@@ -101,7 +101,7 @@ export default class ModuleManagerValidation implements IModuleManager {
         return result;
     }
 
-    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
+    _get_scope_by_operation_level(operation: account.call_contract_operation, level: u32): Uint8Array {
         let scope = this.default_scope;
 
         if (level == 3) {
@@ -114,7 +114,7 @@ export default class ModuleManagerValidation implements IModuleManager {
         return Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
     }
 
-    _get_module_by_operation(operation: account.operation): Uint8Array|null {
+    _get_module_by_operation(operation: account.call_contract_operation): Uint8Array|null {
         const level3_scope = this._get_scope_by_operation_level(operation, 3);
         const level3_module = this.storage.get(level3_scope);
         if (level3_module && level3_module.value) {
@@ -136,8 +136,19 @@ export default class ModuleManagerValidation implements IModuleManager {
         return null;
     }
 
-    validate_operation(operation: account.operation): boolean {
-        const module = this._get_module_by_operation(operation);
+    validate_operation(args: authority.authorize_arguments): boolean {
+        let module = null;
+
+        if (args.type == authority.authorization_type.contract_call) {
+            const operation = new account.call_contract_operation();
+            operation.contract_id = args.call!.contract_id;
+            operation.entry_point = args.call!.entry_point;
+            operation.args = args.call!.data;
+            module = this._get_module_by_operation(operation)
+        }
+
+        if (args.type == authority.authorization_type.transaction_application)
+
         if (module != null) {
             System.log(`[account] selected validation ${Base58.encode(module)}`);
 
@@ -146,11 +157,6 @@ export default class ModuleManagerValidation implements IModuleManager {
                 System.log(`[account] validation same caller ${Base58.encode(caller)}`)
                 return false;
             }
-
-            const op = new modvalidation.operation();
-            op.contract_id = operation.contract_id;
-            op.entry_point = operation.entry_point;
-            op.args = operation.args;
 
             const args = new modvalidation.is_valid_operation_args(op);
             const module_interface = new IModValidation(module);

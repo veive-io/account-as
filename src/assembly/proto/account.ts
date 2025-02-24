@@ -24,8 +24,8 @@ export namespace account {
     constructor() {}
   }
 
-  export class operation {
-    static encode(message: operation, writer: Writer): void {
+  export class call_contract_operation {
+    static encode(message: call_contract_operation, writer: Writer): void {
       const unique_name_contract_id = message.contract_id;
       if (unique_name_contract_id !== null) {
         writer.uint32(10);
@@ -44,9 +44,9 @@ export namespace account {
       }
     }
 
-    static decode(reader: Reader, length: i32): operation {
+    static decode(reader: Reader, length: i32): call_contract_operation {
       const end: usize = length < 0 ? reader.end : reader.ptr + length;
-      const message = new operation();
+      const message = new call_contract_operation();
 
       while (reader.ptr < end) {
         const tag = reader.uint32();
@@ -93,7 +93,7 @@ export namespace account {
       if (unique_name_operation !== null) {
         writer.uint32(10);
         writer.fork();
-        operation.encode(unique_name_operation, writer);
+        call_contract_operation.encode(unique_name_operation, writer);
         writer.ldelim();
       }
     }
@@ -106,7 +106,10 @@ export namespace account {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.operation = operation.decode(reader, reader.uint32());
+            message.operation = call_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
             break;
 
           default:
@@ -118,9 +121,9 @@ export namespace account {
       return message;
     }
 
-    operation: operation | null;
+    operation: call_contract_operation | null;
 
-    constructor(operation: operation | null = null) {
+    constructor(operation: call_contract_operation | null = null) {
       this.operation = operation;
     }
   }
@@ -131,7 +134,7 @@ export namespace account {
       if (unique_name_operation !== null) {
         writer.uint32(10);
         writer.fork();
-        operation.encode(unique_name_operation, writer);
+        call_contract_operation.encode(unique_name_operation, writer);
         writer.ldelim();
       }
     }
@@ -144,7 +147,10 @@ export namespace account {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.operation = operation.decode(reader, reader.uint32());
+            message.operation = call_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
             break;
 
           default:
@@ -156,9 +162,9 @@ export namespace account {
       return message;
     }
 
-    operation: operation | null;
+    operation: call_contract_operation | null;
 
-    constructor(operation: operation | null = null) {
+    constructor(operation: call_contract_operation | null = null) {
       this.operation = operation;
     }
   }
@@ -169,7 +175,7 @@ export namespace account {
       if (unique_name_operation !== null) {
         writer.uint32(10);
         writer.fork();
-        operation.encode(unique_name_operation, writer);
+        call_contract_operation.encode(unique_name_operation, writer);
         writer.ldelim();
       }
     }
@@ -182,7 +188,10 @@ export namespace account {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.operation = operation.decode(reader, reader.uint32());
+            message.operation = call_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
             break;
 
           default:
@@ -194,9 +203,9 @@ export namespace account {
       return message;
     }
 
-    operation: operation | null;
+    operation: call_contract_operation | null;
 
-    constructor(operation: operation | null = null) {
+    constructor(operation: call_contract_operation | null = null) {
       this.operation = operation;
     }
   }
@@ -666,7 +675,7 @@ export namespace account {
       if (unique_name_operation !== null) {
         writer.uint32(10);
         writer.fork();
-        operation.encode(unique_name_operation, writer);
+        call_contract_operation.encode(unique_name_operation, writer);
         writer.ldelim();
       }
     }
@@ -679,7 +688,10 @@ export namespace account {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message.operation = operation.decode(reader, reader.uint32());
+            message.operation = call_contract_operation.decode(
+              reader,
+              reader.uint32()
+            );
             break;
 
           default:
@@ -691,9 +703,9 @@ export namespace account {
       return message;
     }
 
-    operation: operation | null;
+    operation: call_contract_operation | null;
 
-    constructor(operation: operation | null = null) {
+    constructor(operation: call_contract_operation | null = null) {
       this.operation = operation;
     }
   }

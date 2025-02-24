@@ -24,7 +24,7 @@ export class Account {
    * @external
    */
   execute(args: account.execute_args): void {
-    this._require_valid_operation(args.operation!);
+    this._require_authorized(args.operation!);
     this._require_not_self();
     this._require_not_executor();
 
@@ -47,7 +47,7 @@ export class Account {
    * @external
    */
   execute_executor(args: account.execute_executor_args): void {
-    this._require_valid_operation(args.operation!);
+    this._require_authorized(args.operation!);
     this._require_not_self();
     this._require_only_executor();
 
@@ -68,7 +68,7 @@ export class Account {
    * @external
    */
   execute_user(args: account.execute_user_args): void {
-    this._require_valid_operation(args.operation!);
+    this._require_authorized(args.operation!);
     this._require_not_caller();
 
     let call_args = new Uint8Array(0);
@@ -123,7 +123,7 @@ export class Account {
         System.fail("unsupported module_type_id");
     }
   }
-  
+
   /**
    * Uninstalls a module of the specified type.
    * 
@@ -175,19 +175,19 @@ export class Account {
     switch (args.module_type_id) {
       case MODULE_VALIDATION_TYPE_ID:
         const mod_manager_validation = new ModuleManagerValidation(this.contractId);
-        result.value = mod_manager_validation.is_module_installed(args.contract_id!); 
+        result.value = mod_manager_validation.is_module_installed(args.contract_id!);
         break;
       case MODULE_EXECUTION_TYPE_ID:
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
-        result.value = mod_manager_execution.is_module_installed(args.contract_id!); 
+        result.value = mod_manager_execution.is_module_installed(args.contract_id!);
         break;
       case MODULE_SIGN_TYPE_ID:
         const module_manager_sign = new ModuleManagerSign(this.contractId);
-        result.value = module_manager_sign.is_module_installed(args.contract_id!); 
+        result.value = module_manager_sign.is_module_installed(args.contract_id!);
         break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
-        result.value = module_manager_hooks.is_module_installed(args.contract_id!); 
+        result.value = module_manager_hooks.is_module_installed(args.contract_id!);
         break;
       default:
         System.fail("unsupported module_type_id");
@@ -312,23 +312,17 @@ export class Account {
    * @external
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
-    const result = new authority.authorize_result(false);
+    const result = new authority.authorize_result(true);
 
-    if (args.type == authority.authorization_type.contract_call) {
-      System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
+    System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
 
-      const operation = new account.operation();
-      operation.contract_id = args.call!.contract_id;
-      operation.entry_point = args.call!.entry_point;
-      operation.args = args.call!.data;
+    const module_manager = new ModuleManagerValidation(this.contractId);
+    result.value = module_manager.validate_operation(args);
 
-      result.value = this.is_valid_operation(new account.is_valid_operation_args(operation)).value;
-
-      if (result.value == true) {
-        System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
-      } else {
-        System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
-      }
+    if (result.value == true) {
+      System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
+    } else {
+      System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
     }
 
     return result;
@@ -394,10 +388,10 @@ export class Account {
   }
 
   /**
-   * Ensures that the operation is valid
+   * Ensures that the operation is authorized
    */
-  _require_valid_operation(operation: account.operation): void {
+  _require_authorized(operation: account.operation): void {
     const module_manager = new ModuleManagerValidation(this.contractId);
-    System.require( module_manager.validate_operation(operation) == true, 'operation is not valid');
+    System.require(module_manager.validate_operation(operation) == true, 'operation is not valid');
   }
 }
