@@ -311,7 +311,6 @@ export class Account {
    * @external
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
-    System.log(`auth type ${args.type}`);
     const result = new authority.authorize_result(false);
     const module_manager = new ModuleManagerValidation(this.contractId);
     result.value = module_manager.authorize(args);
