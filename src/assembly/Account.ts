@@ -123,7 +123,7 @@ export class Account {
         System.fail("unsupported module_type_id");
     }
   }
-  
+
   /**
    * Uninstalls a module of the specified type.
    * 
@@ -175,19 +175,19 @@ export class Account {
     switch (args.module_type_id) {
       case MODULE_VALIDATION_TYPE_ID:
         const mod_manager_validation = new ModuleManagerValidation(this.contractId);
-        result.value = mod_manager_validation.is_module_installed(args.contract_id!); 
+        result.value = mod_manager_validation.is_module_installed(args.contract_id!);
         break;
       case MODULE_EXECUTION_TYPE_ID:
         const mod_manager_execution = new ModuleManagerExecution(this.contractId);
-        result.value = mod_manager_execution.is_module_installed(args.contract_id!); 
+        result.value = mod_manager_execution.is_module_installed(args.contract_id!);
         break;
       case MODULE_SIGN_TYPE_ID:
         const module_manager_sign = new ModuleManagerSign(this.contractId);
-        result.value = module_manager_sign.is_module_installed(args.contract_id!); 
+        result.value = module_manager_sign.is_module_installed(args.contract_id!);
         break;
       case MODULE_HOOKS_TYPE_ID:
         const module_manager_hooks = new ModuleManagerHooks(this.contractId);
-        result.value = module_manager_hooks.is_module_installed(args.contract_id!); 
+        result.value = module_manager_hooks.is_module_installed(args.contract_id!);
         break;
       default:
         System.fail("unsupported module_type_id");
@@ -380,7 +380,7 @@ export class Account {
    * Ensures that the operation is valid
    */
   _require_valid_operation(operation: account.call_operation): void {
-    System.require( this._is_valid_operation(operation) == true, 'operation is not valid');
+    System.require(this._is_valid_operation(operation) == true, 'operation is not valid');
   }
 
   /**
@@ -408,5 +408,22 @@ export class Account {
     }
 
     return module_manager.authorize(args);
+  }
+
+  /**
+   * @external
+   * @readonly
+   */
+  manifest(): account.manifest {
+    const result = new account.manifest();
+    result.version = "2.0.0";
+    result.supported_modules = [
+      MODULE_VALIDATION_TYPE_ID,
+      MODULE_EXECUTION_TYPE_ID,
+      MODULE_SIGN_TYPE_ID,
+      MODULE_HOOKS_TYPE_ID
+    ];
+
+    return result;
   }
 }

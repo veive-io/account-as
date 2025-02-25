@@ -919,4 +919,57 @@ export namespace account {
       this.value = value;
     }
   }
+
+  export class manifest {
+    static encode(message: manifest, writer: Writer): void {
+      const unique_name_version = message.version;
+      if (unique_name_version !== null) {
+        writer.uint32(10);
+        writer.string(unique_name_version);
+      }
+
+      const unique_name_supported_modules = message.supported_modules;
+      if (unique_name_supported_modules.length !== 0) {
+        for (let i = 0; i < unique_name_supported_modules.length; ++i) {
+          writer.uint32(16);
+          writer.uint32(unique_name_supported_modules[i]);
+        }
+      }
+    }
+
+    static decode(reader: Reader, length: i32): manifest {
+      const end: usize = length < 0 ? reader.end : reader.ptr + length;
+      const message = new manifest();
+
+      while (reader.ptr < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1:
+            message.version = reader.string();
+            break;
+
+          case 2:
+            message.supported_modules.push(reader.uint32());
+            break;
+
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+
+      return message;
+    }
+
+    version: string | null;
+    supported_modules: Array<u32>;
+
+    constructor(
+      version: string | null = null,
+      supported_modules: Array<u32> = []
+    ) {
+      this.version = version;
+      this.supported_modules = supported_modules;
+    }
+  }
 }
