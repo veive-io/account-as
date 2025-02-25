@@ -1,5 +1,5 @@
 import { account } from "../proto/account";
-import { Arrays, System, Storage, Protobuf, Base58 } from "@koinos/sdk-as";
+import { Arrays, System, Storage, Protobuf, Base58, authority } from "@koinos/sdk-as";
 import { ArrayBytes } from "./utils";
 import IModuleManager from "./IModuleManager";
 import { IModValidation, MODULE_VALIDATION_TYPE_ID, modvalidation } from "@veive-io/mod-validation-as";
@@ -21,10 +21,6 @@ export default class ModuleManagerValidation implements IModuleManager {
             account.module_validation.encode,
             () => new account.module_validation()
         );
-    }
-
-    get default_scope(): modvalidation.scope {
-        return new modvalidation.scope(1);
     }
 
     install_module(
@@ -101,45 +97,65 @@ export default class ModuleManagerValidation implements IModuleManager {
         return result;
     }
 
-    _get_scope_by_operation_level(operation: account.operation, level: u32): Uint8Array {
-        let scope = this.default_scope;
+    _get_scope_by_level(operation: authority.call_data, level: u32): Uint8Array {
+        let scope = new modvalidation.scope('contract_call');
 
         if (level == 3) {
-            scope = new modvalidation.scope(operation.entry_point, operation.contract_id);
+            scope = new modvalidation.scope('contract_call', operation.entry_point, operation.contract_id);
         }
         else if (level == 2) {
-            scope = new modvalidation.scope(operation.entry_point);
+            scope = new modvalidation.scope('contract_call', operation.entry_point);
         }
 
         return Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
     }
 
-    _get_module_by_operation(operation: account.operation): Uint8Array|null {
-        const level3_scope = this._get_scope_by_operation_level(operation, 3);
+    _get_module_by_call_data(operation: authority.call_data): Uint8Array|null {
+        const level3_scope = this._get_scope_by_level(operation, 3);
         const level3_module = this.storage.get(level3_scope);
         if (level3_module && level3_module.value) {
+            System.log(`[account] selected scope contract_call + ${operation.entry_point.toString()} + ${Base58.encode(operation.contract_id)}`);
             return level3_module.value;
         }
 
-        const level2_scope = this._get_scope_by_operation_level(operation, 2);
+        const level2_scope = this._get_scope_by_level(operation, 2);
         const level2_module = this.storage.get(level2_scope);
         if (level2_module && level2_module.value) {
+            System.log(`[account] selected scope contract_call + ${operation.entry_point.toString()}`);
             return level2_module.value;
         }
 
-        const level1_scope = this._get_scope_by_operation_level(operation, 1);
+        const level1_scope = this._get_scope_by_level(operation, 1);
         const level1_module = this.storage.get(level1_scope);
         if (level1_module && level1_module.value) {
+            System.log(`[account] selected scope contract_call`);
             return level1_module.value;
         }
 
         return null;
     }
 
-    validate_operation(operation: account.operation): boolean {
-        const module = this._get_module_by_operation(operation);
+    authorize(args: authority.authorize_arguments): boolean {
+        let module : Uint8Array|null = null;
+
+        if (args.type == authority.authorization_type.contract_call) {
+            module = module = this._get_module_by_call_data(args.call!);
+        }
+        else if (args.type == authority.authorization_type.contract_upload) {
+            System.log(`[account] selected scope contract_upload`);
+            const scope = new modvalidation.scope('contract_upload');
+            const scope_encoded = Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
+            module = this.storage.get(scope_encoded)!.value;
+        }
+        else if (args.type == authority.authorization_type.transaction_application) {
+            System.log(`[account] selected scope transaction_application`);
+            const scope = new modvalidation.scope('transaction_application');
+            const scope_encoded = Protobuf.encode<modvalidation.scope>(scope, modvalidation.scope.encode);
+            module = this.storage.get(scope_encoded)!.value;
+        }
+
         if (module != null) {
-            System.log(`[account] selected validation ${Base58.encode(module)}`);
+            System.log(`[account] selected validator ${Base58.encode(module)}`);
 
             const caller = System.getCaller().caller;
             if (caller && caller.length > 0 && Arrays.equal(caller, module)) {
@@ -147,28 +163,27 @@ export default class ModuleManagerValidation implements IModuleManager {
                 return false;
             }
 
-            const op = new modvalidation.operation();
-            op.contract_id = operation.contract_id;
-            op.entry_point = operation.entry_point;
-            op.args = operation.args;
+            const mod_args = new modvalidation.authorize_arguments();
+            mod_args.type = args.type;
 
-            const args = new modvalidation.is_valid_operation_args(op);
-            const module_interface = new IModValidation(module);
-            const res = module_interface.is_valid_operation(args);
-            return res.value;
-
-        } else {
-
-            // in new account you don't have validation and you need to install the first without any check
-            const modules = this.get_modules();
-            if (modules.length == 0) {
-                return true;
+            if (args.type == authority.authorization_type.contract_call && args.call != null) {
+                mod_args.call = new modvalidation.call_data();
+                mod_args.call!.caller = args.call!.caller;
+                mod_args.call!.contract_id = args.call!.contract_id;
+                mod_args.call!.entry_point = args.call!.entry_point;
+                mod_args.call!.data = args.call!.data;
             }
 
+            const module_interface = new IModValidation(module);
+            const res = module_interface.is_authorized(mod_args);
+
+            System.log(`[account] operation_type=${args.type}, ${args.type == authority.authorization_type.contract_call ? 'entry_point='+args.call!.entry_point.toString() : ''} authorization ${res.value == true ? 'ok' : 'nok'}`);
+
+            return res.value;
         }
 
-        System.log(`[account] no validation found`);
+        System.log(`[account] no validation found, skip`);
 
-        return false;
+        return true;
     }
 }

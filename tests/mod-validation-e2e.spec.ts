@@ -6,6 +6,7 @@ import { beforeAll, afterAll, it, expect } from "@jest/globals";
 import * as dotenv from "dotenv";
 import * as modAbi from "@veive-io/mod-validation-as/dist/modvalidation-abi.json";
 import * as accountAbi from "../build/account-abi.json";
+import * as fs from "fs";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ jest.setTimeout(600000);
 const localKoinos = new LocalKoinos();
 const provider = localKoinos.getProvider() as unknown as Provider;
 
-const modSign = new Signer({
+const modValidation = new Signer({
     privateKey: randomBytes(32).toString("hex"),
     provider
 });
@@ -31,7 +32,7 @@ const accountContract = new Contract({
 }).functions;
 
 const modSerializer = new Contract({
-    id: modSign.getAddress(),
+    id: modValidation.getAddress(),
     abi: modAbi,
     provider
 }).serializer;
@@ -43,7 +44,7 @@ beforeAll(async () => {
 
     // deploy mod contract
     await localKoinos.deployContract(
-        modSign.getPrivateKey("wif"),
+        modValidation.getPrivateKey("wif"),
         path.join(__dirname, "../node_modules/@veive-io/mod-validation-as/dist/release/ModValidation.wasm"),
         modAbi
     );
@@ -56,8 +57,8 @@ beforeAll(async () => {
         {},
         {
             authorizesCallContract: true,
-            authorizesTransactionApplication: false,
-            authorizesUploadContract: false,
+            authorizesTransactionApplication: true,
+            authorizesUploadContract: true,
         }
     );
 });
@@ -69,12 +70,12 @@ afterAll(() => {
 
 it("install module error: caller must be itself", async () => {
     const scope = await modSerializer.serialize({
-        entry_point: 1
+        operation_type: 'contract_call'
     }, "scope");
 
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 1,
-        contract_id: modSign.address,
+        contract_id: modValidation.address,
         scopes: [
             utils.encodeBase64url(scope)
         ]
@@ -106,15 +107,17 @@ it("check module type is supported", async () => {
 })
 
 it("install module", async () => {
-    const scope = await modSerializer.serialize({
-        entry_point: 1
-    }, "scope");
+    const scope1 = await modSerializer.serialize({operation_type: 'contract_call'}, "scope");
+    const scope2 = await modSerializer.serialize({operation_type: 'contract_upload'}, "scope");
+    const scope3 = await modSerializer.serialize({operation_type: 'transaction_application'}, "scope");
 
     const { operation: install_module } = await accountContract["install_module"]({
         module_type_id: 1,
-        contract_id: modSign.address,
+        contract_id: modValidation.address,
         scopes: [
-            utils.encodeBase64url(scope)
+            utils.encodeBase64url(scope1),
+            utils.encodeBase64url(scope2),
+            utils.encodeBase64url(scope3)
         ]
     }, { onlyOperation: true });
 
@@ -139,16 +142,16 @@ it("install module", async () => {
     expect(receipt.logs).toContain("[mod-validation] called module install");
 
     const { result: r1 } = await accountContract["get_modules"]();
-    expect(r1.value).toStrictEqual([modSign.address]);
+    expect(r1.value).toStrictEqual([modValidation.address]);
 
     const { result: r2 } = await accountContract["is_module_installed"]({
         module_type_id: 1,
-        contract_id: modSign.address
+        contract_id: modValidation.address
     });
     expect(r2.value).toStrictEqual(true);
 });
 
-it("trigger module is_valid_operation", async () => {
+it("trigger module is_authorized", async () => {
     const { operation: test } = await accountContract["test"]({}, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -170,14 +173,47 @@ it("trigger module is_valid_operation", async () => {
     console.log(receipt);
     
     expect(receipt).toBeDefined();
-    expect(receipt.logs).toContain("[mod-validation] is_valid_operation called");
-    expect(receipt.logs).toContain(`[account] selected validation ${modSign.address}`);
+    expect(receipt.logs).toContain("[mod-validation] is_authorized called");
+    expect(receipt.logs).toContain(`[account] selected validation ${modValidation.address}`);
 });
+
+it("trigger authorize with deploy", async () => {
+    const wasm = fs.readFileSync(path.join(__dirname, "../build/release/Account.wasm"));
+    const bytecode = new Uint8Array(wasm);
+
+    const tx = new Transaction({
+        signer: accountSign,
+        provider
+    });
+
+    const smartContract = new Contract({
+        id: accountSign.getAddress(),
+        abi: accountAbi,
+        provider,
+        bytecode,
+        signer: accountSign
+    });
+    
+    const { operation } = await smartContract.deploy({
+        abi: JSON.stringify(accountAbi),
+        authorizesCallContract: true,
+        authorizesTransactionApplication: true,
+        authorizesUploadContract: true,
+        onlyOperation: true
+    });
+
+    await tx.pushOperation(operation);
+    const receipt = await tx.send();
+    await tx.wait();
+
+    console.log(receipt);
+});
+
 
 it("uninstall module", async () => {
     const { operation: uninstall_module } = await accountContract["uninstall_module"]({
         module_type_id: 1,
-        contract_id: modSign.address
+        contract_id: modValidation.address
     }, { onlyOperation: true });
 
     const tx = new Transaction({
@@ -205,7 +241,7 @@ it("uninstall module", async () => {
 
     const { result: r2 } = await accountContract["is_module_installed"]({
         module_type_id: 1,
-        contract_id: modSign.address
+        contract_id: modValidation.address
     });
     expect(r2).toBeUndefined();
 });

@@ -281,8 +281,7 @@ export class Account {
    */
   is_valid_operation(args: account.is_valid_operation_args): account.is_valid_operation_result {
     const result = new account.is_valid_operation_result();
-    const module_manager = new ModuleManagerValidation(this.contractId);
-    result.value = module_manager.validate_operation(args.operation!);
+    result.value = this._is_valid_operation(args.operation!);
     return result;
   }
 
@@ -313,24 +312,8 @@ export class Account {
    */
   authorize(args: authority.authorize_arguments): authority.authorize_result {
     const result = new authority.authorize_result(false);
-
-    if (args.type == authority.authorization_type.contract_call) {
-      System.log(`[mod-account] validating ${args.call!.entry_point.toString()}`);
-
-      const operation = new account.operation();
-      operation.contract_id = args.call!.contract_id;
-      operation.entry_point = args.call!.entry_point;
-      operation.args = args.call!.data;
-
-      result.value = this.is_valid_operation(new account.is_valid_operation_args(operation)).value;
-
-      if (result.value == true) {
-        System.log(`[mod-account] authorized ${args.call!.entry_point.toString()}`);
-      } else {
-        System.log(`[mod-account] unauthorized ${args.call!.entry_point.toString()}`);
-      }
-    }
-
+    const module_manager = new ModuleManagerValidation(this.contractId);
+    result.value = module_manager.authorize(args);
     return result;
   }
 
@@ -396,8 +379,34 @@ export class Account {
   /**
    * Ensures that the operation is valid
    */
-  _require_valid_operation(operation: account.operation): void {
+  _require_valid_operation(operation: account.call_operation): void {
+    System.require( this._is_valid_operation(operation) == true, 'operation is not valid');
+  }
+
+  /**
+   * Check if a call operation is valid
+   */
+  _is_valid_operation(operation: account.call_operation): boolean {
     const module_manager = new ModuleManagerValidation(this.contractId);
-    System.require( module_manager.validate_operation(operation) == true, 'operation is not valid');
+    const args = new authority.authorize_arguments();
+    args.type = authority.authorization_type.contract_call;
+    args.call = new authority.call_data();
+    args.call!.contract_id = operation.contract_id!;
+    args.call!.entry_point = operation.entry_point;
+
+    if (operation.args !== null && operation.args!.length > 0) {
+      args.call!.data = operation.args!;
+      /*
+      args.call!.data = new Uint8Array(operation.args!.length);
+      args.call!.data.set(operation.args!);
+      */
+    }
+
+    const caller = System.getCaller().caller;
+    if (caller && caller.length > 0) {
+      args.call!.caller = caller;
+    }
+
+    return module_manager.authorize(args);
   }
 }

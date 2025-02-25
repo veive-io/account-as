@@ -8,22 +8,22 @@ message mod {
     
 }
 
-message operation {
+message call_operation {
     bytes contract_id = 1 [(koinos.btype) = ADDRESS];
     uint32 entry_point = 2;
     bytes args = 3;
 }
 
 message execute_args {
-    operation operation = 1;
+    call_operation operation = 1;
 }
 
 message execute_executor_args {
-    operation operation = 1;
+    call_operation operation = 1;
 }
 
 message execute_user_args {
-    operation operation = 1;
+    call_operation operation = 1;
 }
 
 message install_module_args {
@@ -72,7 +72,7 @@ message is_valid_signature_result {
 }
 
 message is_valid_operation_args {
-    operation operation = 1;
+    call_operation operation = 1;
 }
 
 message is_valid_operation_result {
@@ -81,11 +81,6 @@ message is_valid_operation_result {
 
 message init_account_args {
     bytes data = 1;
-}
-
-message selector {
-    uint32 entry_point = 1;
-    bytes contract_id = 2 [(koinos.btype) = ADDRESS];
 }
 
 message module_validation {
