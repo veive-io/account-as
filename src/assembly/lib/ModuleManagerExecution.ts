@@ -119,7 +119,7 @@ export default class ModuleManagerExecution implements IModuleManager {
                 }
 
                 const args = new modexecution.execute_args();
-                const op = new modexecution.operation();
+                const op = new modexecution.call_operation();
                 op.contract_id = operation.contract_id;
                 op.entry_point = operation.entry_point;
                 op.args = operation.args;

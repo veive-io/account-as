@@ -179,7 +179,7 @@ export default class ModuleManagerHooks implements IModuleManager {
                 }
 
                 const args = new modhooks.pre_check_args();
-                const op = new modhooks.operation();
+                const op = new modhooks.call_operation();
                 op.contract_id = operation.contract_id;
                 op.entry_point = operation.entry_point;
                 op.args = operation.args;
