@@ -10,7 +10,7 @@ Examples:
 - Management of community wallets through multi-signature accounts.
 - Wallet recovery via social recovery.
 
-Complete documentation: https://docs.veive.io
+Full documentation: https://docs.veive.io
 
 ### **Account Class Interface**
 
