@@ -40,7 +40,7 @@ The Veive protocol comprises several repositories that together implement a modu
 
 #### **Core Smart Account Repository**
 
-1. **[account-as](https://github.com/veiveprotocol/account-as)**
+1. **[account-as](https://github.com/veive-io/account-as)**
    
    This repository contains the core smart contract for the Veive account system. Each user deploys this contract to manage operations, validate signatures, and interact with various modules. It serves as the main hub where modules are installed, providing a customizable and secure environment for managing blockchain interactions.
 
@@ -48,19 +48,19 @@ The Veive protocol comprises several repositories that together implement a modu
 
 These repositories, though external dependencies, are integral to the functionality of Veive smart accounts. They provide essential classes, protobuf definitions, and interfaces for developing and interacting with various types of modules.
 
-1. **[mod-validation-as](https://github.com/veiveprotocol/mod-validation-as)**
+1. **[mod-validation-as](https://github.com/veive-io/mod-validation-as)**
    
    Framework for creating validation modules that verify operations before execution. Developers extend the `ModValidator` class and use the provided protobuf definitions to build custom validation logic.
 
-2. **[mod-execution-as](https://github.com/veiveprotocol/mod-execution-as)**
+2. **[mod-execution-as](https://github.com/veive-io/mod-execution-as)**
    
    Focuses on execution modules responsible for specific operations like token transfers or smart contract interactions. The `ModExecution` class is extended to implement these functionalities.
 
-3. **[mod-sign-as](https://github.com/veiveprotocol/mod-sign-as)**
+3. **[mod-sign-as](https://github.com/veive-io/mod-sign-as)**
    
    Provides the foundation for signature modules, defining different methods for signature verification, such as ECDSA or WebAuthn. Developers extend the `ModSign` class to implement custom signature verification mechanisms.
 
-4. **[mod-hooks-as](https://github.com/veiveprotocol/mod-hooks-as)**
+4. **[mod-hooks-as](https://github.com/veive-io/mod-hooks-as)**
    
    For hook modules, which implement pre-checks and post-checks around operations. The `ModHooks` class allows developers to create modules that execute custom logic before or after an operation, such as enforcing spending limits or logging transactions.
 
@@ -68,33 +68,33 @@ These repositories, though external dependencies, are integral to the functional
 
 Based on the core module repositories, specific modules have been developed to provide various functionalities within the Veive ecosystem:
 
-1. **[mod-allowance](https://github.com/veiveprotocol/mod-allowance)**
+1. **[mod-allowance](https://github.com/veive-io/mod-allowance)**
    
    Utilizes the allowance mechanism to pre-authorize operations, ensuring that only pre-authorized operations are executed. This module is typically installed in the scope `entry_point=allow` to manage allowances for various operations.
 
-2. **[mod-execution-any-as](https://github.com/veiveprotocol/mod-execution-any-as)**
+2. **[mod-execution-any-as](https://github.com/veive-io/mod-execution-any-as)**
    
    A generic execution module that handles any operation, commonly installed in the "any" scope. It is versatile and can execute a wide range of operations without specific checks.
 
-3. **[mod-validation-signature-as](https://github.com/veiveprotocol/mod-validation-signature-as)**
+3. **[mod-validation-signature-as](https://github.com/veive-io/mod-validation-signature-as)**
    
    Validates signatures using different signature methods, often installed in scopes:
    - `operation_type=contract_call,contract_upload,transaction_application` to enable signature verification on all operations by default.
    - `entry_point=allow` to verify the authenticity of operations before they are allowed.
 
-4. **[mod-validation-multisign-as](https://github.com/veiveprotocol/mod-validation-multisign-as)**
+4. **[mod-validation-multisign-as](https://github.com/veive-io/mod-validation-multisign-as)**
    
    Supports multi-signature validation, ideal for scenarios like social recovery or multi-party wallets. Users can specify a set of "guardians" and a threshold of signatures required to authorize an operation.
 
-5. **[mod-sign-mnemonic-as](https://github.com/veiveprotocol/mod-sign-mnemonic-as)**
+5. **[mod-sign-mnemonic-as](https://github.com/veive-io/mod-sign-mnemonic-as)**
    
    Specifically for verifying mnemonics (12 words) signatures. This module ensures that operations are signed with a valid ES256 key, providing a standard method of signature verification.
 
-6. **[mod-sign-webauthn-as](https://github.com/veiveprotocol/mod-sign-webauthn-as)**
+6. **[mod-sign-webauthn-as](https://github.com/veive-io/mod-sign-webauthn-as)**
    
    Enables signature verification using the WebAuthn standard, supporting the use of passkeys for authentication. It is designed for strong, phishing-resistant authentication scenarios.
 
-7. **[mod-sign-openid-as](https://github.com/veiveprotocol/mod-sign-openid-as)**
+7. **[mod-sign-openid-as](https://github.com/veive-io/mod-sign-openid-as)**
    
    Enables signature verification using the OpenID standard, supporting authentication via Google, Microsoft, Auth0, and all OpenID providers.
 
